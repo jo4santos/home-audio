@@ -73,6 +73,7 @@ Group=${USER}
 Environment="XDG_RUNTIME_DIR=/run/user/1000"
 Environment="PULSE_RUNTIME_PATH=/run/user/1000/pulse/"
 Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+ExecStartPre=/bin/sleep 10
 EOF
 
 sudo systemctl daemon-reload

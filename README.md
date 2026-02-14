@@ -345,11 +345,19 @@ sudo journalctl -u snapclient -f
 3. Se não tiveres, instalar: **Snapcast Server**
 4. Abrir **Music Assistant**
 5. Ir a **Settings → Players**
-6. Deves ver todos os players configurados:
-   - colunas-escritorio
-   - colunas-suite
-   - colunas-cozinha
-   - etc.
+6. Deves ver os players com o **hostname do RPi** (ex: rpi-escritorio, rpi-suite, etc.)
+
+### Renomear Players no Music Assistant
+
+O Snapcast mostra o **hostname** do sistema em vez do `hostID` configurado. Para ter nomes mais amigáveis:
+
+1. No Music Assistant: **Settings → Players**
+2. Clicar no player (ex: "rpi-escritorio")
+3. Clicar em **Edit** ou no ícone de edição
+4. Mudar o nome para "colunas-escritorio" (ou outro nome desejado)
+5. Guardar
+
+Isto é apenas cosmético - o sistema funciona perfeitamente com os hostnames.
 
 ---
 
