@@ -37,6 +37,7 @@ Este projeto implementa um sistema de áudio multi-divisão com:
 | WC Suite         | 192.168.30.5  | 00:0D:18:B0:62:43 | rpi-wcsuite           | colunas-wcsuite        |
 | Quarto Crianças  | 192.168.30.6  | 00:0D:18:B0:67:C5 | rpi-quartocriancas    | colunas-quartocriancas |
 | Quarto Desporto  | 192.168.30.1  | 34:81:F4:F6:88:73 | rpi-quartodesporto    | colunas-quartodesporto |
+| Teste            | 192.168.30.8  | (configurável)    | rpi-teste             | colunas-teste          |
 
 **Servidor Snapcast**: 192.168.2.100 (Home Assistant)
 
@@ -196,7 +197,20 @@ chmod +x deploy.sh
 
 # Copiar para uma divisão específica
 ./deploy.sh escritorio
+
+# Se não souberes o MAC Bluetooth ainda, podes especificá-lo depois
+# Útil para novas instalações onde ainda não fizeste scan do amplificador
+./deploy.sh teste 00:0D:18:B0:67:E8
 ```
+
+**Especificar MAC Bluetooth como argumento:**
+
+Se estás a configurar uma nova divisão e ainda não sabes o MAC do amplificador, podes:
+1. Fazer deploy sem MAC: `./deploy.sh teste`
+2. No RPi, fazer scan Bluetooth e descobrir o MAC
+3. Fazer deploy novamente com o MAC: `./deploy.sh teste 00:0D:18:B0:67:E8`
+
+O MAC fornecido como argumento substitui o que está no ficheiro de configuração.
 
 **Ou copiar manualmente:**
 
