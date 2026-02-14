@@ -173,7 +173,7 @@ After=bluetooth.service
 
 [Timer]
 OnBootSec=45s
-OnUnitActiveSec=5min
+OnUnitActiveSec=15s
 AccuracySec=1s
 
 [Install]
