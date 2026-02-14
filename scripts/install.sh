@@ -60,10 +60,20 @@ sleep 2
 echo ""
 echo "=== 4/6 Configurar Snapcast ==="
 sudo tee /etc/default/snapclient > /dev/null << EOF
-SNAPCLIENT_OPTS="-h ${SNAPSERVER_IP} --hostID ${PLAYER_NAME}"
+SNAPCLIENT_OPTS="-h ${SNAPSERVER_IP} --hostID ${PLAYER_NAME} -s pulse"
 START_SNAPCLIENT=true
 EOF
 
+# Configurar serviço Snapclient para correr como user (necessário para aceder PulseAudio)
+sudo mkdir -p /etc/systemd/system/snapclient.service.d
+sudo tee /etc/systemd/system/snapclient.service.d/override.conf > /dev/null << EOF
+[Service]
+User=${USER}
+Group=${USER}
+Environment="PULSE_RUNTIME_PATH=/run/user/1000/pulse/"
+EOF
+
+sudo systemctl daemon-reload
 sudo systemctl enable snapclient
 
 echo ""

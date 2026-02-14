@@ -228,12 +228,13 @@ bash install.sh
 
 O script vai:
 1. Atualizar o sistema
-2. Instalar Snapcast Client
-3. Instalar e configurar Bluetooth
-4. Instalar PulseAudio
-5. Criar scripts de reconexão automática
+2. Instalar Snapcast Client e configurar para usar PulseAudio
+3. Instalar e configurar Bluetooth (com rfkill unblock)
+4. Instalar e configurar PulseAudio
+5. Criar scripts de reconexão automática Bluetooth
 6. Configurar WiFi watchdog
-7. Ativar todos os serviços
+7. Configurar permissões e serviços systemd
+8. Ativar todos os serviços
 
 ---
 
@@ -470,6 +471,34 @@ sudo systemctl restart snapclient
 # Verificar conectividade com servidor
 ping 192.168.2.100
 ```
+
+### Player aparece mas não sai som
+
+Se o player aparece no Music Assistant mas não sai áudio:
+
+```bash
+# 1. Verificar se Snapclient está a usar PulseAudio
+sudo journalctl -u snapclient -n 30 | grep "Player name"
+# Deve mostrar: Player name: alsa, device: pulse
+
+# 2. Verificar se sink Bluetooth é o default
+pactl info | grep "Default Sink"
+# Deve mostrar: bluez_sink.XX_XX_XX_XX_XX_XX.a2dp_sink
+
+# 3. Se não for, definir como default
+pactl set-default-sink bluez_sink.00_0D_18_B0_67_E8.a2dp_sink
+
+# 4. Verificar volume (não deve estar muted)
+pactl list sinks | grep -A 10 "bluez_sink"
+
+# 5. Reiniciar Snapclient
+sudo systemctl restart snapclient
+
+# 6. Testar áudio direto
+paplay -d bluez_sink.00_0D_18_B0_67_E8.a2dp_sink /usr/share/sounds/alsa/Front_Center.wav
+```
+
+**Nota:** O script de instalação já configura tudo automaticamente. Este troubleshooting é apenas se algo falhar.
 
 ### WiFi não reconecta após queda de energia
 
