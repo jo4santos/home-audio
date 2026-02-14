@@ -147,9 +147,12 @@ No teu computador:
 # Testar ping
 ping 192.168.30.7    # usar o IP da tua divisão
 
-# Testar SSH
-ssh relvasantos@192.168.30.7
+# Primeira conexão SSH (aceita a chave do host automaticamente)
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.7
 # Password: qwe123asd456
+
+# Sair
+exit
 ```
 
 Se funcionou, continua para o próximo passo!
@@ -422,6 +425,18 @@ sudo ip link set wlan0 up
 4. Verificar se SD Card está bem inserido
 5. Tentar re-flash do SD Card
 
+### Erro "Host key verification failed"
+
+Se obtiveres este erro ao conectar via SSH:
+
+```bash
+# Remover entrada antiga do known_hosts
+ssh-keygen -R 192.168.30.7
+
+# Conectar novamente aceitando nova chave
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.7
+```
+
 ### Áudio dessincronizado entre divisões
 
 ```bash
@@ -518,7 +533,16 @@ Para instalar em todas as 7 divisões de forma eficiente:
 # Configurar cada RPi com raspi-config (WiFi, hostname, SSH)
 # Aguardar todos estarem online
 
-# Configurar SSH sem password (uma vez)
+# Primeira conexão a cada RPi (aceitar host keys)
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.7 "exit"
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.2 "exit"
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.3 "exit"
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.4 "exit"
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.5 "exit"
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.6 "exit"
+ssh -o StrictHostKeyChecking=accept-new relvasantos@192.168.30.1 "exit"
+
+# Configurar SSH sem password
 ssh-copy-id relvasantos@192.168.30.7
 ssh-copy-id relvasantos@192.168.30.2
 ssh-copy-id relvasantos@192.168.30.3
