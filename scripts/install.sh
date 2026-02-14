@@ -70,7 +70,9 @@ sudo tee /etc/systemd/system/snapclient.service.d/override.conf > /dev/null << E
 [Service]
 User=${USER}
 Group=${USER}
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
 Environment="PULSE_RUNTIME_PATH=/run/user/1000/pulse/"
+Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
 EOF
 
 sudo systemctl daemon-reload
