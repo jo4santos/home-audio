@@ -79,8 +79,23 @@ log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
 }
 
-bluetoothctl power on > /dev/null 2>&1
+# Desbloquear Bluetooth (caso esteja bloqueado)
+sudo rfkill unblock bluetooth
 sleep 1
+
+# Garantir que o Bluetooth está ligado
+log_msg "A ligar Bluetooth..."
+for i in {1..5}; do
+    if bluetoothctl power on > /dev/null 2>&1; then
+        log_msg "✓ Bluetooth ligado"
+        break
+    fi
+    log_msg "Tentativa $i/5 de ligar Bluetooth..."
+    sleep 2
+done
+
+# Aguardar Bluetooth ficar pronto
+sleep 3
 
 attempt=0
 while [ $attempt -lt $MAX_ATTEMPTS ]; do
@@ -95,18 +110,23 @@ while [ $attempt -lt $MAX_ATTEMPTS ]; do
         exit 0
     fi
 
-    log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS"
+    log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS de conectar"
     bluetoothctl connect "$AMP_MAC" > /dev/null 2>&1
     sleep $RETRY_INTERVAL
     ((attempt++))
 done
 
-log_msg "✗ Falha ao conectar"
+log_msg "✗ Falha ao conectar após $MAX_ATTEMPTS tentativas"
 exit 1
 EOFSCRIPT
 
 sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-reconnect.sh
 sudo chmod +x /usr/local/bin/bluetooth-reconnect.sh
+
+# Criar ficheiro de log com permissões corretas
+sudo touch /var/log/bluetooth-reconnect.log
+sudo chown ${USER}:${USER} /var/log/bluetooth-reconnect.log
+sudo chmod 644 /var/log/bluetooth-reconnect.log
 
 echo ""
 echo "=== 6/6 Criar serviços ==="
@@ -114,17 +134,20 @@ echo "=== 6/6 Criar serviços ==="
 sudo tee /etc/systemd/system/bluetooth-reconnect.service > /dev/null << EOF
 [Unit]
 Description=Bluetooth Amplifier Auto-Reconnect
-After=bluetooth.service pulseaudio.service
+After=bluetooth.service pulseaudio.service sound.target network-online.target
+Wants=bluetooth.service pulseaudio.service
 Requires=bluetooth.service
 
 [Service]
 Type=oneshot
 User=${USER}
 Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+ExecStartPre=/bin/sleep 5
 ExecStart=/usr/local/bin/bluetooth-reconnect.sh
 RemainAfterExit=yes
 Restart=on-failure
 RestartSec=10
+TimeoutStartSec=120
 
 [Install]
 WantedBy=multi-user.target
@@ -133,10 +156,12 @@ EOF
 sudo tee /etc/systemd/system/bluetooth-reconnect.timer > /dev/null << EOF
 [Unit]
 Description=Check Bluetooth connection periodically
+After=bluetooth.service
 
 [Timer]
-OnBootSec=30s
-OnUnitActiveSec=2min
+OnBootSec=45s
+OnUnitActiveSec=5min
+AccuracySec=1s
 
 [Install]
 WantedBy=timers.target
@@ -158,6 +183,12 @@ fi
 EOF
 
 sudo chmod +x /usr/local/bin/wifi-watchdog.sh
+
+# Criar ficheiro de log do WiFi watchdog com permissões corretas
+sudo touch /var/log/wifi-watchdog.log
+sudo chown ${USER}:${USER} /var/log/wifi-watchdog.log
+sudo chmod 644 /var/log/wifi-watchdog.log
+
 (crontab -l 2>/dev/null | grep -v wifi-watchdog; echo "*/2 * * * * /usr/local/bin/wifi-watchdog.sh") | crontab -
 
 sudo systemctl daemon-reload

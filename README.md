@@ -374,36 +374,70 @@ home-audio/
 
 ## 🔍 Troubleshooting
 
-### Bluetooth "Failed to set power on"
+### Bluetooth "Failed to set power on" ou "adapter-not-powered"
 
-Se ao executar `power on` no `bluetoothctl` obtiveres este erro:
+Se ao executar `power on` no `bluetoothctl` obtiveres este erro, ou se o amplificador não conectar automaticamente no boot:
 
 ```bash
-# Sair do bluetoothctl
+# Sair do bluetoothctl (se estiveres dentro)
 exit
 
 # Verificar se está bloqueado
 sudo rfkill list bluetooth
+# Se vires "Soft blocked: yes", então precisa ser desbloqueado
 
 # Desbloquear
 sudo rfkill unblock bluetooth
 
-# Reiniciar serviço
+# Reiniciar serviço Bluetooth
 sudo systemctl restart bluetooth
 
 # Aguardar
-sleep 2
+sleep 3
 
-# Tentar novamente
-sudo bluetoothctl
-power on
+# Verificar status
+sudo systemctl status bluetooth
+
+# Agora o Bluetooth deve funcionar
+bluetoothctl power on
+bluetoothctl connect 00:0D:18:B0:67:E8
+
+# Verificar conexão
+pactl list short sinks | grep bluez
 ```
 
-### Bluetooth não conecta
+**Nota:** O script de reconexão automática já inclui `rfkill unblock`, mas se instalaste antes desta atualização, copia novamente os ficheiros e executa `bash install.sh`.
+
+### Amplificador não conecta automaticamente no boot
+
+O amplificador **precisa de estar ligado (power on)** para o script conectar. Se está ligado mas não conectou:
 
 ```bash
-# Ver logs de reconexão
+# 1. Verificar se o Bluetooth está bloqueado
+sudo rfkill list bluetooth
+
+# 2. Se estiver bloqueado, desbloquear
+sudo rfkill unblock bluetooth
+sudo systemctl restart bluetooth
+sleep 3
+
+# 3. Forçar reconexão manual
+sudo systemctl start bluetooth-reconnect.service
+
+# 4. Aguardar 10-20 segundos
+
+# 5. Verificar se conectou
+pactl list short sinks | grep bluez
+```
+
+### Bluetooth não conecta (geral)
+
+```bash
+# Ver logs de reconexão em tempo real
 sudo journalctl -u bluetooth-reconnect -f
+
+# Ver últimas 50 linhas do log
+sudo journalctl -u bluetooth-reconnect -n 50
 
 # Ver log do script
 sudo tail -f /var/log/bluetooth-reconnect.log
