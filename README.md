@@ -245,12 +245,24 @@ O script vai:
    - Consultar o manual do amplificador
    - Geralmente é pressionar um botão por 3-5 segundos
 
-2. **No RPi, iniciar bluetoothctl:**
+2. **No RPi, desbloquear e verificar Bluetooth:**
+   ```bash
+   # Desbloquear Bluetooth (se necessário)
+   sudo rfkill unblock bluetooth
+
+   # Reiniciar serviço
+   sudo systemctl restart bluetooth
+
+   # Aguardar 2 segundos
+   sleep 2
+   ```
+
+3. **Iniciar bluetoothctl:**
    ```bash
    sudo bluetoothctl
    ```
 
-3. **Executar comandos (um de cada vez):**
+4. **Executar comandos (um de cada vez):**
    ```
    power on
    agent on
@@ -258,12 +270,12 @@ O script vai:
    scan on
    ```
 
-4. **Aguardar 10-30 segundos** até aparecer algo como:
+5. **Aguardar 10-30 segundos** até aparecer algo como:
    ```
    [NEW] Device 00:0D:18:B0:67:E8 Amplificador_Nome
    ```
 
-5. **Quando aparecer, continuar** (substituir pelo MAC correto):
+6. **Quando aparecer, continuar** (substituir pelo MAC correto):
    ```
    scan off
    pair 00:0D:18:B0:67:E8
@@ -272,7 +284,7 @@ O script vai:
    exit
    ```
 
-6. **Verificar conexão:**
+7. **Verificar conexão:**
    ```bash
    pactl list short sinks
    ```
@@ -361,6 +373,31 @@ home-audio/
 ---
 
 ## 🔍 Troubleshooting
+
+### Bluetooth "Failed to set power on"
+
+Se ao executar `power on` no `bluetoothctl` obtiveres este erro:
+
+```bash
+# Sair do bluetoothctl
+exit
+
+# Verificar se está bloqueado
+sudo rfkill list bluetooth
+
+# Desbloquear
+sudo rfkill unblock bluetooth
+
+# Reiniciar serviço
+sudo systemctl restart bluetooth
+
+# Aguardar
+sleep 2
+
+# Tentar novamente
+sudo bluetoothctl
+power on
+```
 
 ### Bluetooth não conecta
 

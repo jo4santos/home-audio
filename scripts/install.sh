@@ -51,6 +51,9 @@ AutoConnect=true
 ReconnectUUIDs=0000110b-0000-1000-8000-00805f9b34fb
 EOF
 
+# Desbloquear Bluetooth
+sudo rfkill unblock bluetooth
+
 sudo systemctl restart bluetooth
 sleep 2
 
