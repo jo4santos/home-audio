@@ -1,374 +1,628 @@
-# Instalação Snapcast Client - Escritório (192.168.30.7)
+# Sistema de Áudio Multi-Divisão com Snapcast
 
-## PASSOS A SEGUIR
+Sistema de som sincronizado para toda a casa usando Raspberry Pi 4B, Snapcast e Home Assistant.
+
+## 📋 Visão Geral
+
+Este projeto implementa um sistema de áudio multi-divisão com:
+- **Sincronização perfeita** entre todas as divisões
+- **Reconexão automática** Bluetooth e WiFi
+- **Integração** com Home Assistant + Music Assistant
+- **7 divisões** independentes controladas centralmente
+
+### Porquê Snapcast?
+
+**Snapcast** foi escolhido em vez de Squeezelite pelos seguintes motivos:
+- ✅ Sincronização de áudio entre divisões em tempo real (latência < 1ms)
+- ✅ Reconexão automática após perda de energia
+- ✅ Integração nativa com Home Assistant/Music Assistant
+- ✅ Protocolo otimizado para redes WiFi
+- ✅ Suporte ativo e comunidade grande
+
+**Squeezelite** apresentou problemas de:
+- ❌ Sincronização inconsistente entre divisões
+- ❌ Falha na reconexão após queda de energia
+- ❌ Gestão de WiFi problemática
+
+---
+
+## 🏠 Configuração das Divisões
+
+| Divisão          | IP            | MAC Amplificador  | Hostname              | Player Name            |
+|------------------|---------------|-------------------|-----------------------|------------------------|
+| Escritório       | 192.168.30.7  | 00:0D:18:B0:67:E8 | rpi-escritorio        | colunas-escritorio     |
+| Suite            | 192.168.30.2  | 00:0D:18:B0:67:76 | rpi-suite             | colunas-suite          |
+| Cozinha          | 192.168.30.3  | 6A:71:C1:06:D3:2A | rpi-cozinha           | colunas-cozinha        |
+| Sala             | 192.168.30.4  | 34:81:F4:F5:E8:AC | rpi-sala              | colunas-sala           |
+| WC Suite         | 192.168.30.5  | 00:0D:18:B0:62:43 | rpi-wcsuite           | colunas-wcsuite        |
+| Quarto Crianças  | 192.168.30.6  | 00:0D:18:B0:67:C5 | rpi-quartocriancas    | colunas-quartocriancas |
+| Quarto Desporto  | 192.168.30.1  | 34:81:F4:F6:88:73 | rpi-quartodesporto    | colunas-quartodesporto |
+
+**Servidor Snapcast**: 192.168.2.100 (Home Assistant)
+
+---
+
+## 🚀 Instalação Rápida
+
+### Pré-requisitos
+
+- SD Card (mínimo 8GB, recomendado 16GB)
+- Raspberry Pi Imager instalado
+- Acesso SSH ao computador
+- Router WiFi 5GHz configurado
+
+### Para uma única divisão
+
+```bash
+# 1. Preparar SD Card (ver secção detalhada abaixo)
+# 2. Inserir SD Card no RPi e ligar
+# 3. Aguardar 2-3 minutos para boot
+
+# 4. No teu computador, copiar ficheiros
+cd scripts
+./deploy.sh escritorio    # substituir pela tua divisão
+
+# 5. Conectar ao RPi e instalar
+ssh pi@192.168.30.7       # usar o IP da tua divisão
+bash install.sh
+
+# 6. Emparelhar Bluetooth (ver secção detalhada)
+# 7. Reiniciar e testar
+sudo reboot
+```
+
+---
+
+## 📖 Instalação Detalhada
 
 ### PASSO 1: Preparar SD Card
 
-1. Abrir Raspberry Pi Imager
-2. OS: Raspberry Pi OS Lite (64-bit)
-3. Storage: Escolher o teu SD Card
-4. Clicar no ícone ⚙️ (engrenagem) para configurações:
-   • Enable SSH (Use password authentication)
-   • Set username and password
-     - Username: pi
-     - Password: qwe123asd456
-   • Configure wireless LAN
-     - SSID: RelvaSantos-2025
-     - Password: qwe123asd456
-     - Country: PT
-   • Set locale settings
-     - Time zone: Europe/Lisbon
-     - Keyboard: pt
-   • Set hostname: rpi-escritorio
-5. Clicar em WRITE
-6. Quando terminar, colocar SD card no RPi e ligar à corrente
-7. Esperar 2-3 minutos para o RPi arrancar
+1. Abrir **Raspberry Pi Imager**
+2. Escolher:
+   - **OS**: Raspberry Pi OS Lite (64-bit)
+   - **Storage**: O teu SD Card
+
+3. Clicar no ícone **⚙️** (engrenagem) para configurações avançadas:
+
+   **Geral**
+   - ✅ Set hostname: `rpi-escritorio` (mudar conforme a divisão)
+   - ✅ Enable SSH
+     - Use password authentication
+   - ✅ Set username and password
+     - Username: `pi`
+     - Password: `qwe123asd456`
+
+   **Services**
+   - ✅ Enable SSH
+     - Use password authentication
+
+   **Options**
+   - ✅ Configure wireless LAN
+     - SSID: `RelvaSantos-2025`
+     - Password: `qwe123asd456`
+     - Wireless LAN country: `PT`
+   - ✅ Set locale settings
+     - Time zone: `Europe/Lisbon`
+     - Keyboard layout: `pt`
+
+4. Clicar em **WRITE** e aguardar conclusão
+5. Inserir SD Card no Raspberry Pi
+6. Ligar à corrente
+7. **Aguardar 2-3 minutos** para o primeiro boot
 
 ---
 
-### PASSO 2: Conectar ao RPi via SSH
+### PASSO 2: Configurar SSH sem Password (Opcional mas Recomendado)
 
-No teu computador:
+Isto permite conectar aos RPis sem ter de inserir password sempre.
 
-ping 192.168.30.7
+```bash
+# No teu computador (executar uma vez)
+ssh-keygen -t ed25519 -C "home-audio"
+# Pressionar ENTER 3 vezes (sem password)
 
+# Copiar chave SSH para cada RPi
+ssh-copy-id pi@192.168.30.7    # Escritório
+ssh-copy-id pi@192.168.30.2    # Suite
+ssh-copy-id pi@192.168.30.3    # Cozinha
+ssh-copy-id pi@192.168.30.4    # Sala
+ssh-copy-id pi@192.168.30.5    # WC Suite
+ssh-copy-id pi@192.168.30.6    # Quarto Crianças
+ssh-copy-id pi@192.168.30.1    # Quarto Desporto
+
+# Testar (não deve pedir password)
 ssh pi@192.168.30.7
-
-Password: qwe123asd456
-
----
-
-### PASSO 3: Criar Script de Instalação
-
-No teu computador, cria um ficheiro chamado install.sh com este conteúdo:
-
-========== INÍCIO DO FICHEIRO install.sh ==========
-
-#!/bin/bash
-set -e
-
-# CONFIGURAÇÃO ESCRITÓRIO
-SNAPSERVER_IP="192.168.2.100"
-AMP_MAC="00:0D:18:B0:67:E8"
-PLAYER_NAME="colunas-escritorio"
-
-echo "=========================================="
-echo "  Instalação Escritório"
-echo "=========================================="
-echo ""
-echo "Servidor: $SNAPSERVER_IP"
-echo "Amplificador: $AMP_MAC"
-echo "Player: $PLAYER_NAME"
-echo ""
-
-echo "=== 1/6 Atualizar sistema ==="
-sudo apt update
-sudo apt upgrade -y
-
-echo ""
-echo "=== 2/6 Instalar pacotes ==="
-sudo apt install -y snapclient bluetooth bluez bluez-tools pulseaudio pulseaudio-module-bluetooth alsa-utils
-
-echo ""
-echo "=== 3/6 Configurar Bluetooth ==="
-sudo tee /etc/bluetooth/main.conf > /dev/null << EOF
-[General]
-Enable=Source,Sink,Media,Socket
-AutoEnable=true
-FastConnectable=true
-ReconnectAttempts=7
-ReconnectIntervals=1,2,4,8,16,32,64
-
-[Policy]
-AutoConnect=true
-ReconnectUUIDs=0000110b-0000-1000-8000-00805f9b34fb
-EOF
-
-sudo systemctl restart bluetooth
-sleep 2
-
-echo ""
-echo "=== 4/6 Configurar Snapcast ==="
-sudo tee /etc/default/snapclient > /dev/null << EOF
-SNAPCLIENT_OPTS="-h ${SNAPSERVER_IP} --hostID ${PLAYER_NAME}"
-START_SNAPCLIENT=true
-EOF
-
-sudo systemctl enable snapclient
-
-echo ""
-echo "=== 5/6 Script reconexão Bluetooth ==="
-sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
-#!/bin/bash
-AMP_MAC="__AMP_MAC__"
-MAX_ATTEMPTS=60
-RETRY_INTERVAL=1
-LOG_FILE="/var/log/bluetooth-reconnect.log"
-
-log_msg() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
-}
-
-bluetoothctl power on > /dev/null 2>&1
-sleep 1
-
-attempt=0
-while [ $attempt -lt $MAX_ATTEMPTS ]; do
-    if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
-        log_msg "✓ Amplificador conectado"
-        sleep 3
-        SINK_NAME=$(pactl list short sinks | grep bluez | awk '{print $2}' | head -n1)
-        if [ -n "$SINK_NAME" ]; then
-            pactl set-default-sink "$SINK_NAME"
-            log_msg "✓ Sink Bluetooth definido: $SINK_NAME"
-        fi
-        exit 0
-    fi
-    
-    log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS"
-    bluetoothctl connect "$AMP_MAC" > /dev/null 2>&1
-    sleep $RETRY_INTERVAL
-    ((attempt++))
-done
-
-log_msg "✗ Falha ao conectar"
-exit 1
-EOFSCRIPT
-
-sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-reconnect.sh
-sudo chmod +x /usr/local/bin/bluetooth-reconnect.sh
-
-echo ""
-echo "=== 6/6 Criar serviços ==="
-
-sudo tee /etc/systemd/system/bluetooth-reconnect.service > /dev/null << EOF
-[Unit]
-Description=Bluetooth Amplifier Auto-Reconnect
-After=bluetooth.service pulseaudio.service
-Requires=bluetooth.service
-
-[Service]
-Type=oneshot
-User=pi
-Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
-ExecStart=/usr/local/bin/bluetooth-reconnect.sh
-RemainAfterExit=yes
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo tee /etc/systemd/system/bluetooth-reconnect.timer > /dev/null << EOF
-[Unit]
-Description=Check Bluetooth connection periodically
-
-[Timer]
-OnBootSec=30s
-OnUnitActiveSec=2min
-
-[Install]
-WantedBy=timers.target
-EOF
-
-sudo tee /usr/local/bin/wifi-watchdog.sh > /dev/null << 'EOF'
-#!/bin/bash
-GATEWAY="192.168.30.1"
-LOG_FILE="/var/log/wifi-watchdog.log"
-
-if ! ping -c 2 -W 3 "$GATEWAY" > /dev/null 2>&1; then
-    echo "$(date): WiFi sem conectividade, a reiniciar wlan0..." >> "$LOG_FILE"
-    sudo ip link set wlan0 down
-    sleep 5
-    sudo ip link set wlan0 up
-    sleep 10
-    systemctl start bluetooth-reconnect.service
-fi
-EOF
-
-sudo chmod +x /usr/local/bin/wifi-watchdog.sh
-(crontab -l 2>/dev/null | grep -v wifi-watchdog; echo "*/2 * * * * /usr/local/bin/wifi-watchdog.sh") | crontab -
-
-sudo systemctl daemon-reload
-sudo systemctl enable bluetooth-reconnect.service
-sudo systemctl enable bluetooth-reconnect.timer
-
-mkdir -p ~/.config/systemd/user
-systemctl --user enable pulseaudio.service
-systemctl --user start pulseaudio.service
-
-echo ""
-echo "=========================================="
-echo "  ✓ Instalação concluída!"
-echo "=========================================="
-echo ""
-echo "PRÓXIMO PASSO: Emparelhar Bluetooth"
-echo ""
-
-========== FIM DO FICHEIRO install.sh ==========
-
----
-
-### PASSO 4: Enviar Script para o RPi
-
-No teu computador:
-
-chmod +x install.sh
-
-scp install.sh pi@192.168.30.7:~/
-
-Password: qwe123asd456
-
----
-
-### PASSO 5: Executar Instalação no RPi
-
-Conectar ao RPi:
-
-ssh pi@192.168.30.7
-
-Executar o script (demora 5-10 minutos):
-
-bash install.sh
-
----
-
-### PASSO 6: Emparelhar Amplificador Bluetooth
-
-Ainda ligado ao RPi via SSH:
-
-1. Colocar o amplificador em modo de emparelhamento (consultar manual)
-
-2. Executar:
-
-sudo bluetoothctl
-
-3. Dentro do bluetoothctl, digitar estes comandos um a um:
-
-power on
-agent on
-default-agent
-scan on
-
-4. Aguardar aparecer (10-30 segundos):
-
-[NEW] Device 00:0D:18:B0:67:E8 Nome_Do_Amplificador
-
-5. Quando aparecer, continuar:
-
-scan off
-pair 00:0D:18:B0:67:E8
-trust 00:0D:18:B0:67:E8
-connect 00:0D:18:B0:67:E8
 exit
+```
 
 ---
 
-### PASSO 7: Iniciar Serviços
+### PASSO 3: Copiar Ficheiros para o RPi
 
-Ainda no RPi:
+Usar o script de deploy para copiar automaticamente os ficheiros certos:
 
-sudo systemctl start snapclient
+```bash
+cd scripts
 
-sudo systemctl start bluetooth-reconnect.timer
+# Tornar script executável (apenas primeira vez)
+chmod +x deploy.sh
 
-Verificar que tudo está a funcionar:
+# Copiar para uma divisão específica
+./deploy.sh escritorio
+```
 
-pactl list short sinks
+**Ou copiar manualmente:**
 
-Deves ver algo como:
-1    bluez_sink.00_0D_18_B0_67_E8.a2dp_sink
+```bash
+cd scripts
 
----
+# Copiar para escritório
+scp install.sh pi@192.168.30.7:~/
+scp ../configs/escritorio.env pi@192.168.30.7:~/config.env
 
-### PASSO 8: Reiniciar e Testar
+# Copiar para suite
+scp install.sh pi@192.168.30.2:~/
+scp ../configs/suite.env pi@192.168.30.2:~/config.env
 
-sudo reboot
-
-Espera 2 minutos, depois testa:
-
-ssh pi@192.168.30.7
-
-pactl list short sinks
-
----
-
-## VERIFICAR NO HOME ASSISTANT
-
-1. Abrir Home Assistant: http://192.168.2.100:8123
-2. Ir a Settings → Add-ons → Snapcast Server
-3. Se não tiveres, instalar o add-on "Snapcast Server"
-4. Abrir Music Assistant
-5. Ir a Settings → Players
-6. Deves ver aparecer: colunas-escritorio
+# ... (repetir para outras divisões)
+```
 
 ---
 
-## RESUMO RÁPIDO DOS COMANDOS
+### PASSO 4: Executar Instalação no RPi
 
-NO TEU COMPUTADOR:
-1. Criar ficheiro install.sh (copiar conteúdo acima)
-2. chmod +x install.sh
-3. scp install.sh pi@192.168.30.7:~/
+```bash
+# Conectar via SSH
+ssh pi@192.168.30.7    # usar o IP da tua divisão
 
-CONECTAR AO RPI:
-4. ssh pi@192.168.30.7
+# Executar instalação (demora 5-10 minutos)
+bash install.sh
+```
 
-NO RPI:
-5. bash install.sh
+O script vai:
+1. Atualizar o sistema
+2. Instalar Snapcast Client
+3. Instalar e configurar Bluetooth
+4. Instalar PulseAudio
+5. Criar scripts de reconexão automática
+6. Configurar WiFi watchdog
+7. Ativar todos os serviços
 
-EMPARELHAR BLUETOOTH:
-6. sudo bluetoothctl
+---
+
+### PASSO 5: Emparelhar Amplificador Bluetooth
+
+**Importante:** Este passo tem de ser feito manualmente para cada RPi.
+
+1. **Colocar o amplificador em modo de emparelhamento**
+   - Consultar o manual do amplificador
+   - Geralmente é pressionar um botão por 3-5 segundos
+
+2. **No RPi, iniciar bluetoothctl:**
+   ```bash
+   sudo bluetoothctl
+   ```
+
+3. **Executar comandos (um de cada vez):**
+   ```
    power on
    agent on
+   default-agent
    scan on
-   (aguardar ver 00:0D:18:B0:67:E8)
+   ```
+
+4. **Aguardar 10-30 segundos** até aparecer algo como:
+   ```
+   [NEW] Device 00:0D:18:B0:67:E8 Amplificador_Nome
+   ```
+
+5. **Quando aparecer, continuar** (substituir pelo MAC correto):
+   ```
    scan off
    pair 00:0D:18:B0:67:E8
    trust 00:0D:18:B0:67:E8
    connect 00:0D:18:B0:67:E8
    exit
+   ```
 
-INICIAR:
-7. sudo systemctl start snapclient
-8. sudo systemctl start bluetooth-reconnect.timer
+6. **Verificar conexão:**
+   ```bash
+   pactl list short sinks
+   ```
 
-REINICIAR:
-9. sudo reboot
+   Deves ver algo como:
+   ```
+   1    bluez_sink.00_0D_18_B0_67_E8.a2dp_sink
+   ```
 
 ---
 
-## SE ALGO CORRER MAL
+### PASSO 6: Iniciar Serviços
 
-Ver logs Bluetooth:
+```bash
+# Iniciar Snapcast Client
+sudo systemctl start snapclient
+
+# Iniciar reconexão Bluetooth automática
+sudo systemctl start bluetooth-reconnect.timer
+
+# Verificar status
+sudo systemctl status snapclient
+sudo systemctl status bluetooth-reconnect.timer
+```
+
+---
+
+### PASSO 7: Reiniciar e Testar
+
+```bash
+# Reiniciar RPi
+sudo reboot
+```
+
+Aguardar 2-3 minutos, depois testar:
+
+```bash
+# Conectar novamente
+ssh pi@192.168.30.7
+
+# Verificar Bluetooth
+pactl list short sinks
+
+# Ver logs de reconexão
 sudo journalctl -u bluetooth-reconnect -f
 
-Ver logs Snapcast:
+# Ver logs Snapcast
 sudo journalctl -u snapclient -f
-
-Forçar reconexão Bluetooth:
-sudo systemctl start bluetooth-reconnect.service
-
-Verificar se amplificador está paired:
-bluetoothctl info 00:0D:18:B0:67:E8
+```
 
 ---
 
-## TABELA DE CONFIGURAÇÃO PARA OUTRAS DIVISÕES
+## 🔧 Verificação no Home Assistant
 
-Divisão          | IP              | MAC Coluna         | Player Name
-----------------|-----------------|-------------------|-------------------------
-Escritório      | 192.168.30.7    | 00:0D:18:B0:67:E8 | colunas-escritorio
-Suite           | 192.168.30.2    | 00:0D:18:B0:67:76 | colunas-suite
-Cozinha         | 192.168.30.3    | 6A:71:C1:06:D3:2A | colunas-cozinha
-Sala            | 192.168.30.4    | 34:81:F4:F5:E8:AC | colunas-sala
-WC Suite        | 192.168.30.5    | 00:0D:18:B0:62:43 | colunas-wcsuite
-Quarto Crianças | 192.168.30.6    | 00:0D:18:B0:67:C5 | colunas-quartocriancas
-Quarto Desporto | 192.168.30.1    | 34:81:F4:F6:88:73 | colunas-quartodesporto
+1. Abrir Home Assistant: `http://192.168.2.100:8123`
+2. Ir a **Settings → Add-ons**
+3. Se não tiveres, instalar: **Snapcast Server**
+4. Abrir **Music Assistant**
+5. Ir a **Settings → Players**
+6. Deves ver todos os players configurados:
+   - colunas-escritorio
+   - colunas-suite
+   - colunas-cozinha
+   - etc.
 
-Para instalar noutras divisões, mudar no ficheiro install.sh:
-- AMP_MAC (MAC da coluna dessa divisão)
-- PLAYER_NAME (nome do player)
+---
 
-SNAPSERVER_IP é sempre: 192.168.2.100
+## 📁 Estrutura de Ficheiros
+
+```
+home-audio/
+├── README.md                      # Este ficheiro
+├── configs/                       # Configurações por divisão
+│   ├── escritorio.env
+│   ├── suite.env
+│   ├── cozinha.env
+│   ├── sala.env
+│   ├── wcsuite.env
+│   ├── quartocriancas.env
+│   └── quartodesporto.env
+└── scripts/
+    ├── install.sh                 # Script principal de instalação
+    └── deploy.sh                  # Script para copiar ficheiros
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### Bluetooth não conecta
+
+```bash
+# Ver logs de reconexão
+sudo journalctl -u bluetooth-reconnect -f
+
+# Ver log do script
+sudo tail -f /var/log/bluetooth-reconnect.log
+
+# Forçar reconexão manual
+sudo systemctl start bluetooth-reconnect.service
+
+# Verificar se amplificador está paired
+bluetoothctl info 00:0D:18:B0:67:E8
+
+# Re-emparelhar se necessário
+sudo bluetoothctl
+remove 00:0D:18:B0:67:E8
+scan on
+# ... (repetir processo de emparelhamento)
+```
+
+### Snapcast não aparece no Home Assistant
+
+```bash
+# Ver logs do Snapcast
+sudo journalctl -u snapclient -f
+
+# Verificar configuração
+cat /etc/default/snapclient
+
+# Reiniciar serviço
+sudo systemctl restart snapclient
+
+# Verificar conectividade com servidor
+ping 192.168.2.100
+```
+
+### WiFi não reconecta após queda de energia
+
+```bash
+# Ver logs do WiFi watchdog
+sudo tail -f /var/log/wifi-watchdog.log
+
+# Testar conectividade
+ping 192.168.30.1
+
+# Verificar interface WiFi
+ip addr show wlan0
+
+# Reiniciar interface manualmente
+sudo ip link set wlan0 down
+sudo ip link set wlan0 up
+```
+
+### RPi não responde após reboot
+
+1. Aguardar 3-5 minutos (primeira boot pode demorar)
+2. Verificar LED de atividade no RPi
+3. Conectar monitor HDMI e teclado USB para diagnóstico
+4. Verificar se SD Card está bem inserido
+5. Tentar re-flash do SD Card
+
+### Áudio dessincronizado entre divisões
+
+```bash
+# Verificar latência no Home Assistant
+# Music Assistant → Settings → Players → (player) → Settings
+
+# Ajustar buffer do Snapcast (se necessário)
+sudo nano /etc/default/snapclient
+# Adicionar: SNAPCLIENT_OPTS="-h 192.168.2.100 --hostID nome --latency 100"
+
+# Reiniciar
+sudo systemctl restart snapclient
+```
+
+---
+
+## 🛠️ Comandos Úteis
+
+### Gestão de Serviços
+
+```bash
+# Ver status de todos os serviços
+sudo systemctl status snapclient
+sudo systemctl status bluetooth-reconnect.service
+sudo systemctl status bluetooth-reconnect.timer
+
+# Reiniciar serviços
+sudo systemctl restart snapclient
+sudo systemctl restart bluetooth-reconnect.service
+
+# Ver logs em tempo real
+sudo journalctl -u snapclient -f
+sudo journalctl -u bluetooth-reconnect -f
+```
+
+### Bluetooth
+
+```bash
+# Verificar dispositivos paired
+bluetoothctl paired-devices
+
+# Info detalhada do amplificador
+bluetoothctl info 00:0D:18:B0:67:E8
+
+# Conectar manualmente
+bluetoothctl connect 00:0D:18:B0:67:E8
+
+# Desconectar
+bluetoothctl disconnect 00:0D:18:B0:67:E8
+```
+
+### PulseAudio
+
+```bash
+# Listar sinks disponíveis
+pactl list short sinks
+
+# Definir sink default
+pactl set-default-sink bluez_sink.00_0D_18_B0_67_E8.a2dp_sink
+
+# Volume
+pactl set-sink-volume @DEFAULT_SINK@ 80%
+pactl set-sink-mute @DEFAULT_SINK@ 0
+```
+
+### Rede
+
+```bash
+# Ver endereço IP
+hostname -I
+
+# Testar conectividade
+ping 192.168.30.1          # Gateway
+ping 192.168.2.100         # Snapcast Server
+
+# Ver status WiFi
+iwconfig wlan0
+
+# Reiniciar interface WiFi
+sudo ip link set wlan0 down
+sudo ip link set wlan0 up
+```
+
+---
+
+## 🔄 Instalar Múltiplas Divisões
+
+Para instalar em todas as 7 divisões de forma eficiente:
+
+### Opção 1: Instalação Sequencial (Recomendado)
+
+```bash
+# Preparar todas as SD Cards com RPi Imager (mudar hostname em cada)
+# Inserir em cada RPi e ligar
+
+# Aguardar 3 minutos para todos arrancarem
+
+# Configurar SSH sem password (uma vez)
+ssh-copy-id pi@192.168.30.7
+ssh-copy-id pi@192.168.30.2
+ssh-copy-id pi@192.168.30.3
+ssh-copy-id pi@192.168.30.4
+ssh-copy-id pi@192.168.30.5
+ssh-copy-id pi@192.168.30.6
+ssh-copy-id pi@192.168.30.1
+
+# Copiar e instalar em cada um
+cd scripts
+for divisao in escritorio suite cozinha sala wcsuite quartocriancas quartodesporto; do
+    ./deploy.sh $divisao
+done
+
+# Agora conectar a cada um e executar
+ssh pi@192.168.30.7 "bash install.sh"
+ssh pi@192.168.30.2 "bash install.sh"
+# ... etc
+```
+
+### Opção 2: Script Automatizado
+
+Criar um ficheiro `install-all.sh`:
+
+```bash
+#!/bin/bash
+
+DIVISIONS=(
+    "escritorio:192.168.30.7"
+    "suite:192.168.30.2"
+    "cozinha:192.168.30.3"
+    "sala:192.168.30.4"
+    "wcsuite:192.168.30.5"
+    "quartocriancas:192.168.30.6"
+    "quartodesporto:192.168.30.1"
+)
+
+for div in "${DIVISIONS[@]}"; do
+    NAME="${div%%:*}"
+    IP="${div##*:}"
+
+    echo "=== Instalando $NAME ($IP) ==="
+
+    # Deploy
+    cd scripts
+    ./deploy.sh $NAME
+    cd ..
+
+    # Instalar remotamente
+    ssh pi@$IP "bash install.sh"
+
+    echo "✓ $NAME concluído!"
+    echo ""
+done
+
+echo "=========================================="
+echo "  Todas as instalações concluídas!"
+echo "=========================================="
+echo ""
+echo "PRÓXIMO PASSO: Emparelhar Bluetooth em cada RPi"
+```
+
+**Nota:** O emparelhamento Bluetooth tem de ser feito manualmente em cada RPi.
+
+---
+
+## 📝 Notas Importantes
+
+### Reconexão Bluetooth
+- O script tenta reconectar durante 60 segundos (tempo suficiente para o amplificador entrar em modo pairing)
+- Timer verifica conexão de 2 em 2 minutos
+- Se a conexão falhar, o script tenta novamente automaticamente
+
+### WiFi Watchdog
+- Verifica conectividade de 2 em 2 minutos
+- Reinicia interface wlan0 se não conseguir ping ao gateway
+- Força reconexão Bluetooth após reiniciar WiFi
+
+### Snapcast
+- Cliente conecta automaticamente ao servidor (192.168.2.100)
+- Sincronização é automática (< 1ms entre divisões)
+- Se servidor não estiver disponível, cliente aguarda e reconecta
+
+### Segurança
+- Password WiFi e SSH estão nos ficheiros de configuração
+- **Recomendação:** Mudar passwords após instalação
+- Considerar usar chaves SSH em vez de password
+
+---
+
+## 🆘 Suporte
+
+### Logs Importantes
+
+```bash
+# Bluetooth
+sudo journalctl -u bluetooth-reconnect -f
+sudo tail -f /var/log/bluetooth-reconnect.log
+
+# Snapcast
+sudo journalctl -u snapclient -f
+
+# WiFi Watchdog
+sudo tail -f /var/log/wifi-watchdog.log
+
+# Sistema
+sudo journalctl -xe
+dmesg | tail -50
+```
+
+### Reset Completo
+
+Se algo correr muito mal:
+
+```bash
+# No RPi
+sudo systemctl stop snapclient
+sudo systemctl stop bluetooth-reconnect.timer
+sudo systemctl stop bluetooth-reconnect.service
+
+# Re-executar instalação
+bash install.sh
+
+# Re-emparelhar Bluetooth
+sudo bluetoothctl
+# ... (processo completo)
+```
+
+### Re-flash SD Card
+
+Se o RPi não arrancar ou tiver problemas graves:
+1. Inserir SD Card no computador
+2. Abrir Raspberry Pi Imager
+3. Repetir Passo 1 (Preparar SD Card)
+4. Repetir todos os passos de instalação
+
+---
+
+## 📚 Recursos
+
+- [Snapcast GitHub](https://github.com/badaix/snapcast)
+- [Music Assistant](https://music-assistant.io/)
+- [Home Assistant](https://www.home-assistant.io/)
+- [Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/)
+
+---
+
+**Versão**: 2.0
+**Última atualização**: 2026-02-14
+**Autor**: José Santos

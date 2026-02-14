@@ -1,0 +1,15 @@
+# Logs
+*.log
+/tmp/
+
+# Ficheiros temporários
+*.tmp
+*.swp
+*~
+
+# Backups
+*.bak
+
+# Ficheiros de configuração com passwords (opcional - se quiseres privacidade)
+# Descomenta as linhas abaixo se não quiseres commitar passwords
+# configs/*.env
