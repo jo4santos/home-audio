@@ -32,19 +32,20 @@ source "$CONFIG_FILE"
 echo "=========================================="
 echo "  Deploy para ${DIVISAO}"
 echo "=========================================="
+echo "User: ${USER}"
 echo "IP: ${IP_ADDRESS}"
 echo "Hostname: ${HOSTNAME}"
 echo ""
 
 # Copiar ficheiros
-echo "A copiar ficheiros para pi@${IP_ADDRESS}..."
-scp install.sh pi@${IP_ADDRESS}:~/
-scp "$CONFIG_FILE" pi@${IP_ADDRESS}:~/config.env
+echo "A copiar ficheiros para ${USER}@${IP_ADDRESS}..."
+scp install.sh ${USER}@${IP_ADDRESS}:~/
+scp "$CONFIG_FILE" ${USER}@${IP_ADDRESS}:~/config.env
 
 echo ""
 echo "✓ Ficheiros copiados com sucesso!"
 echo ""
 echo "Para instalar, executa:"
-echo "  ssh pi@${IP_ADDRESS}"
+echo "  ssh ${USER}@${IP_ADDRESS}"
 echo "  bash install.sh"
 echo ""

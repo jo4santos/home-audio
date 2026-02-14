@@ -116,7 +116,7 @@ Requires=bluetooth.service
 
 [Service]
 Type=oneshot
-User=pi
+User=${USER}
 Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
 ExecStart=/usr/local/bin/bluetooth-reconnect.sh
 RemainAfterExit=yes

@@ -50,6 +50,14 @@ for div in "${DIVISIONS[@]}"; do
     NAME="${div%%:*}"
     IP="${div##*:}"
 
+    # Carregar USER do ficheiro de configuração
+    CONFIG_FILE="../configs/${NAME}.env"
+    if [ -f "$CONFIG_FILE" ]; then
+        source "$CONFIG_FILE"
+    else
+        USER="relvasantos"  # fallback
+    fi
+
     echo ""
     echo "=========================================="
     echo "  Instalando: $NAME ($IP)"
@@ -77,7 +85,7 @@ for div in "${DIVISIONS[@]}"; do
 
     # Instalar remotamente
     echo "→ A executar instalação (demora 5-10 minutos)..."
-    if ssh -o ConnectTimeout=10 pi@"$IP" "bash install.sh" > /tmp/install-${NAME}.log 2>&1; then
+    if ssh -o ConnectTimeout=10 ${USER}@"$IP" "bash install.sh" > /tmp/install-${NAME}.log 2>&1; then
         echo "✓ Instalação concluída"
         SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
     else
@@ -117,6 +125,14 @@ if [ $SUCCESS_COUNT -gt 0 ]; then
         NAME="${div%%:*}"
         IP="${div##*:}"
 
+        # Carregar USER do ficheiro de configuração
+        CONFIG_FILE="../configs/${NAME}.env"
+        if [ -f "$CONFIG_FILE" ]; then
+            source "$CONFIG_FILE"
+        else
+            USER="relvasantos"  # fallback
+        fi
+
         # Verificar se esta divisão foi instalada com sucesso
         SKIP=false
         for failed in "${FAILED_DIVISIONS[@]}"; do
@@ -127,7 +143,7 @@ if [ $SUCCESS_COUNT -gt 0 ]; then
         done
 
         if [ "$SKIP" = false ]; then
-            echo "   ssh pi@$IP"
+            echo "   ssh ${USER}@$IP"
             echo "   sudo bluetoothctl"
             echo "   # power on → agent on → scan on → pair → trust → connect"
             echo ""

@@ -54,20 +54,29 @@ Este projeto implementa um sistema de áudio multi-divisão com:
 ### Para uma única divisão
 
 ```bash
-# 1. Preparar SD Card (ver secção detalhada abaixo)
-# 2. Inserir SD Card no RPi e ligar
-# 3. Aguardar 2-3 minutos para boot
+# 1. Preparar SD Card sem configurações (ver secção detalhada abaixo)
+# 2. Inserir SD Card no RPi, ligar monitor e teclado
+# 3. Configurar no assistente inicial:
+#    - Teclado: Portuguese (Portugal)
+#    - User: relvasantos / Password: qwe123asd456
 
-# 4. No teu computador, copiar ficheiros
+# 4. Configurar com raspi-config:
+#    - WiFi Country (PT)
+#    - WiFi (SSID e password)
+#    - Hostname (ex: rpi-escritorio)
+#    - SSH (Enable)
+#    - Finish e Reboot
+
+# 5. No teu computador, copiar ficheiros
 cd scripts
 ./deploy.sh escritorio    # substituir pela tua divisão
 
-# 5. Conectar ao RPi e instalar
-ssh pi@192.168.30.7       # usar o IP da tua divisão
+# 6. Conectar ao RPi e instalar
+ssh relvasantos@192.168.30.7    # usar o IP da tua divisão
 bash install.sh
 
-# 6. Emparelhar Bluetooth (ver secção detalhada)
-# 7. Reiniciar e testar
+# 7. Emparelhar Bluetooth (ver secção detalhada)
+# 8. Reiniciar e testar
 sudo reboot
 ```
 
@@ -81,38 +90,73 @@ sudo reboot
 2. Escolher:
    - **OS**: Raspberry Pi OS Lite (64-bit)
    - **Storage**: O teu SD Card
-
-3. Clicar no ícone **⚙️** (engrenagem) para configurações avançadas:
-
-   **Geral**
-   - ✅ Set hostname: `rpi-escritorio` (mudar conforme a divisão)
-   - ✅ Enable SSH
-     - Use password authentication
-   - ✅ Set username and password
-     - Username: `pi`
-     - Password: `qwe123asd456`
-
-   **Services**
-   - ✅ Enable SSH
-     - Use password authentication
-
-   **Options**
-   - ✅ Configure wireless LAN
-     - SSID: `RelvaSantos-2025`
-     - Password: `qwe123asd456`
-     - Wireless LAN country: `PT`
-   - ✅ Set locale settings
-     - Time zone: `Europe/Lisbon`
-     - Keyboard layout: `pt`
-
-4. Clicar em **WRITE** e aguardar conclusão
+3. Clicar em **WRITE** (não configurar nada nas opções avançadas)
+4. Aguardar conclusão
 5. Inserir SD Card no Raspberry Pi
-6. Ligar à corrente
-7. **Aguardar 2-3 minutos** para o primeiro boot
+6. Ligar teclado, monitor HDMI e à corrente
+7. **Aguardar arrancar** (2-3 minutos)
+
+**Ao arrancar, vai aparecer um assistente de configuração:**
+
+1. **Teclado**: Escolher **Portuguese (Portugal)**
+2. **Criar utilizador**:
+   - Username: `relvasantos`
+   - Password: `qwe123asd456`
+3. **Fazer login** com as credenciais criadas
 
 ---
 
-### PASSO 2: Configurar SSH sem Password (Opcional mas Recomendado)
+### PASSO 2: Configurar RPi com raspi-config
+
+Ainda no RPi (com teclado e monitor), executar:
+
+```bash
+sudo raspi-config
+```
+
+**Configurar pela seguinte ordem:**
+
+1. **5 Localisation Options → L4 WLAN Country**
+   - Escolher: **PT Portugal**
+   - OK
+
+2. **1 System Options → S1 Wireless LAN**
+   - SSID: `RelvaSantos-2025`
+   - Password: `qwe123asd456`
+   - OK
+
+3. **1 System Options → S4 Hostname**
+   - Hostname: `rpi-escritorio` (mudar conforme a divisão)
+   - OK
+
+4. **3 Interface Options → I2 SSH**
+   - Enable SSH: **Yes**
+   - OK
+
+5. **Finish** e escolher **Yes** para reboot
+
+**Aguardar 1-2 minutos** para o RPi reiniciar.
+
+---
+
+### PASSO 3: Testar Conectividade
+
+No teu computador:
+
+```bash
+# Testar ping
+ping 192.168.30.7    # usar o IP da tua divisão
+
+# Testar SSH
+ssh relvasantos@192.168.30.7
+# Password: qwe123asd456
+```
+
+Se funcionou, continua para o próximo passo!
+
+---
+
+### PASSO 4: Configurar SSH sem Password (Opcional mas Recomendado)
 
 Isto permite conectar aos RPis sem ter de inserir password sempre.
 
@@ -122,22 +166,22 @@ ssh-keygen -t ed25519 -C "home-audio"
 # Pressionar ENTER 3 vezes (sem password)
 
 # Copiar chave SSH para cada RPi
-ssh-copy-id pi@192.168.30.7    # Escritório
-ssh-copy-id pi@192.168.30.2    # Suite
-ssh-copy-id pi@192.168.30.3    # Cozinha
-ssh-copy-id pi@192.168.30.4    # Sala
-ssh-copy-id pi@192.168.30.5    # WC Suite
-ssh-copy-id pi@192.168.30.6    # Quarto Crianças
-ssh-copy-id pi@192.168.30.1    # Quarto Desporto
+ssh-copy-id relvasantos@192.168.30.7    # Escritório
+ssh-copy-id relvasantos@192.168.30.2    # Suite
+ssh-copy-id relvasantos@192.168.30.3    # Cozinha
+ssh-copy-id relvasantos@192.168.30.4    # Sala
+ssh-copy-id relvasantos@192.168.30.5    # WC Suite
+ssh-copy-id relvasantos@192.168.30.6    # Quarto Crianças
+ssh-copy-id relvasantos@192.168.30.1    # Quarto Desporto
 
 # Testar (não deve pedir password)
-ssh pi@192.168.30.7
+ssh relvasantos@192.168.30.7
 exit
 ```
 
 ---
 
-### PASSO 3: Copiar Ficheiros para o RPi
+### PASSO 5: Copiar Ficheiros para o RPi
 
 Usar o script de deploy para copiar automaticamente os ficheiros certos:
 
@@ -157,23 +201,23 @@ chmod +x deploy.sh
 cd scripts
 
 # Copiar para escritório
-scp install.sh pi@192.168.30.7:~/
-scp ../configs/escritorio.env pi@192.168.30.7:~/config.env
+scp install.sh relvasantos@192.168.30.7:~/
+scp ../configs/escritorio.env relvasantos@192.168.30.7:~/config.env
 
 # Copiar para suite
-scp install.sh pi@192.168.30.2:~/
-scp ../configs/suite.env pi@192.168.30.2:~/config.env
+scp install.sh relvasantos@192.168.30.2:~/
+scp ../configs/suite.env relvasantos@192.168.30.2:~/config.env
 
 # ... (repetir para outras divisões)
 ```
 
 ---
 
-### PASSO 4: Executar Instalação no RPi
+### PASSO 6: Executar Instalação no RPi
 
 ```bash
 # Conectar via SSH
-ssh pi@192.168.30.7    # usar o IP da tua divisão
+ssh relvasantos@192.168.30.7    # usar o IP da tua divisão
 
 # Executar instalação (demora 5-10 minutos)
 bash install.sh
@@ -190,7 +234,7 @@ O script vai:
 
 ---
 
-### PASSO 5: Emparelhar Amplificador Bluetooth
+### PASSO 7: Emparelhar Amplificador Bluetooth
 
 **Importante:** Este passo tem de ser feito manualmente para cada RPi.
 
@@ -237,7 +281,7 @@ O script vai:
 
 ---
 
-### PASSO 6: Iniciar Serviços
+### PASSO 8: Iniciar Serviços
 
 ```bash
 # Iniciar Snapcast Client
@@ -253,7 +297,7 @@ sudo systemctl status bluetooth-reconnect.timer
 
 ---
 
-### PASSO 7: Reiniciar e Testar
+### PASSO 9: Reiniciar e Testar
 
 ```bash
 # Reiniciar RPi
@@ -264,7 +308,7 @@ Aguardar 2-3 minutos, depois testar:
 
 ```bash
 # Conectar novamente
-ssh pi@192.168.30.7
+ssh relvasantos@192.168.30.7
 
 # Verificar Bluetooth
 pactl list short sinks
@@ -470,19 +514,18 @@ Para instalar em todas as 7 divisões de forma eficiente:
 ### Opção 1: Instalação Sequencial (Recomendado)
 
 ```bash
-# Preparar todas as SD Cards com RPi Imager (mudar hostname em cada)
-# Inserir em cada RPi e ligar
-
-# Aguardar 3 minutos para todos arrancarem
+# Preparar todas as SD Cards (processo manual em cada)
+# Configurar cada RPi com raspi-config (WiFi, hostname, SSH)
+# Aguardar todos estarem online
 
 # Configurar SSH sem password (uma vez)
-ssh-copy-id pi@192.168.30.7
-ssh-copy-id pi@192.168.30.2
-ssh-copy-id pi@192.168.30.3
-ssh-copy-id pi@192.168.30.4
-ssh-copy-id pi@192.168.30.5
-ssh-copy-id pi@192.168.30.6
-ssh-copy-id pi@192.168.30.1
+ssh-copy-id relvasantos@192.168.30.7
+ssh-copy-id relvasantos@192.168.30.2
+ssh-copy-id relvasantos@192.168.30.3
+ssh-copy-id relvasantos@192.168.30.4
+ssh-copy-id relvasantos@192.168.30.5
+ssh-copy-id relvasantos@192.168.30.6
+ssh-copy-id relvasantos@192.168.30.1
 
 # Copiar e instalar em cada um
 cd scripts
@@ -491,8 +534,8 @@ for divisao in escritorio suite cozinha sala wcsuite quartocriancas quartodespor
 done
 
 # Agora conectar a cada um e executar
-ssh pi@192.168.30.7 "bash install.sh"
-ssh pi@192.168.30.2 "bash install.sh"
+ssh relvasantos@192.168.30.7 "bash install.sh"
+ssh relvasantos@192.168.30.2 "bash install.sh"
 # ... etc
 ```
 
@@ -525,7 +568,7 @@ for div in "${DIVISIONS[@]}"; do
     cd ..
 
     # Instalar remotamente
-    ssh pi@$IP "bash install.sh"
+    ssh relvasantos@$IP "bash install.sh"
 
     echo "✓ $NAME concluído!"
     echo ""
