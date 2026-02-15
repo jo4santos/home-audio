@@ -155,11 +155,11 @@ while [ $attempt -lt $MAX_ATTEMPTS ]; do
         exit 0
     fi
 
-    # Tentar conectar
+    # Tentar conectar usando sessão interativa bluetoothctl (como o utilizador faz manualmente)
     if [ $((attempt % 10)) -eq 0 ]; then
         log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS de conectar"
     fi
-    bluetoothctl connect "$AMP_MAC" > /dev/null 2>&1
+    echo -e "connect $AMP_MAC\nquit" | bluetoothctl > /dev/null 2>&1
     sleep $RETRY_INTERVAL
     ((attempt++))
 done
