@@ -110,6 +110,12 @@ done
 # Aguardar Bluetooth ficar pronto
 sleep 3
 
+# Verificar PRIMEIRO se já está conectado - se sim, não fazer nada
+if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
+    log_msg "✓ Já está conectado. Nada a fazer."
+    exit 0
+fi
+
 # Verificar se dispositivo está paired
 IS_PAIRED=$(bluetoothctl devices Paired 2>/dev/null | grep -c "$AMP_MAC")
 
