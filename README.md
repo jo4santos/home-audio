@@ -433,7 +433,14 @@ pactl list short sinks | grep bluez
 
 ### Amplificador não conecta automaticamente no boot
 
-O amplificador **precisa de estar ligado (power on)** para o script conectar. Se está ligado mas não conectou:
+O amplificador **precisa de estar ligado (power on)** para o script conectar.
+
+**Com o novo sistema de re-pair automático**, o script agora:
+1. Tenta conectar normalmente (Fase 1 - 10 segundos)
+2. Se falhar, faz re-pair automático (Fase 2 - até 30 segundos)
+3. Repete o ciclo de 15 em 15 segundos até conseguir
+
+**Se mesmo assim não conectar:**
 
 ```bash
 # 1. Verificar se o Bluetooth está bloqueado
@@ -444,10 +451,11 @@ sudo rfkill unblock bluetooth
 sudo systemctl restart bluetooth
 sleep 3
 
-# 3. Forçar reconexão manual
+# 3. Forçar reconexão manual (aguardar até 40 segundos)
 sudo systemctl start bluetooth-reconnect.service
 
-# 4. Aguardar 10-20 segundos
+# 4. Ver logs em tempo real para diagnosticar
+sudo journalctl -u bluetooth-reconnect -f
 
 # 5. Verificar se conectou
 pactl list short sinks | grep bluez
@@ -455,27 +463,34 @@ pactl list short sinks | grep bluez
 
 ### Bluetooth não conecta (geral)
 
+O sistema agora faz **re-pair automático**, mas se precisares de diagnosticar:
+
 ```bash
-# Ver logs de reconexão em tempo real
+# Ver logs de reconexão em tempo real (mostra se está em Fase 1 ou Fase 2)
 sudo journalctl -u bluetooth-reconnect -f
 
-# Ver últimas 50 linhas do log
-sudo journalctl -u bluetooth-reconnect -n 50
+# Ver últimas 100 linhas do log
+sudo journalctl -u bluetooth-reconnect -n 100
 
-# Ver log do script
+# Ver log do script detalhado
 sudo tail -f /var/log/bluetooth-reconnect.log
 
-# Forçar reconexão manual
+# Forçar reconexão manual (inclui re-pair automático se necessário)
 sudo systemctl start bluetooth-reconnect.service
 
 # Verificar se amplificador está paired
 bluetoothctl info 00:0D:18:B0:67:E8
 
-# Re-emparelhar se necessário
+# Se quiseres fazer re-pair manual (normalmente não é necessário):
 sudo bluetoothctl
 remove 00:0D:18:B0:67:E8
 scan on
-# ... (repetir processo de emparelhamento)
+# Aguardar aparecer o dispositivo
+scan off
+pair 00:0D:18:B0:67:E8
+trust 00:0D:18:B0:67:E8
+connect 00:0D:18:B0:67:E8
+exit
 ```
 
 ### Snapcast não aparece no Home Assistant
@@ -733,12 +748,16 @@ echo "PRÓXIMO PASSO: Emparelhar Bluetooth em cada RPi"
 
 ## 📝 Notas Importantes
 
-### Reconexão Bluetooth
-- Timer verifica conexão de **15 em 15 segundos** (conecta rapidamente quando ligares o amplificador)
-- Cada verificação tenta conectar **10 vezes** (10 segundos de tentativas)
-- Se falhar, aguarda 15s e tenta novamente **para sempre** (nunca desiste)
-- O RPi conecta automaticamente quando ligares o amplificador, geralmente em **menos de 25 segundos**
-- Funciona mesmo que ligues o amplificador horas ou dias depois
+### Reconexão Bluetooth Automática
+- **No boot**: Aguarda 90 segundos antes de começar (dá tempo aos amplificadores sairem de modo pairing)
+- **Tentativas**: Até 60 tentativas de conexão (60 segundos) por ciclo
+- **Timer**: Repete de 15 em 15 segundos indefinidamente
+- **Nunca remove pairing**: Mantém pairing existente sempre (mais estável)
+- **Initial pairing**: Se dispositivo não estiver paired, faz pairing inicial automaticamente
+- **Ideal para amplificadores eissound 5269e**: Resolve o problema de amplificadores que entram em modo pairing ao ligar da corrente
+- O RPi conecta automaticamente quando ligares o amplificador
+- Após boot, se ligares o amplificador, conecta em **menos de 2 minutos**
+- **Nunca desiste**: Continua a tentar indefinidamente até conseguir
 
 ### WiFi Watchdog
 - Verifica conectividade de 2 em 2 minutos

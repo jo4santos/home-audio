@@ -84,7 +84,7 @@ echo "=== 5/6 Script reconexão Bluetooth ==="
 sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
 #!/bin/bash
 AMP_MAC="__AMP_MAC__"
-MAX_ATTEMPTS=10
+MAX_ATTEMPTS=60
 RETRY_INTERVAL=1
 LOG_FILE="/var/log/bluetooth-reconnect.log"
 
@@ -110,26 +110,61 @@ done
 # Aguardar Bluetooth ficar pronto
 sleep 3
 
+# Verificar se dispositivo está paired
+IS_PAIRED=$(bluetoothctl devices Paired 2>/dev/null | grep -c "$AMP_MAC")
+
+if [ "$IS_PAIRED" -eq 0 ]; then
+    log_msg "⚠ Dispositivo não está paired. A fazer scan para initial pairing..."
+
+    # Tentar fazer scan e pair (apenas se dispositivo não estiver paired)
+    echo -e "scan on" | bluetoothctl > /dev/null 2>&1 &
+    sleep 15
+
+    DEVICE_FOUND=$(bluetoothctl devices 2>/dev/null | grep -c "$AMP_MAC")
+    echo -e "scan off" | bluetoothctl > /dev/null 2>&1
+
+    if [ "$DEVICE_FOUND" -gt 0 ]; then
+        log_msg "✓ Dispositivo encontrado. A fazer pairing inicial..."
+        echo -e "pair $AMP_MAC\ntrust $AMP_MAC\nquit" | bluetoothctl > /dev/null 2>&1
+        sleep 3
+        log_msg "Pairing inicial completo. A tentar conectar..."
+    else
+        log_msg "⚠ Dispositivo não encontrado. Amplificador pode estar desligado. Tenta novamente em 15s."
+        exit 0
+    fi
+fi
+
+# Tentar conectar ao dispositivo paired
+log_msg "A tentar conectar ao amplificador (até 60 tentativas)..."
 attempt=0
 while [ $attempt -lt $MAX_ATTEMPTS ]; do
+    # Verificar se já está conectado
     if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
-        log_msg "✓ Amplificador conectado"
+        log_msg "✓ Amplificador conectado (tentativa $((attempt+1)))"
+
+        # Aguardar um pouco para PulseAudio processar
         sleep 3
-        SINK_NAME=$(pactl list short sinks | grep bluez | awk '{print $2}' | head -n1)
+
+        # Tentar configurar sink (não crítico se falhar)
+        SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
         if [ -n "$SINK_NAME" ]; then
-            pactl set-default-sink "$SINK_NAME"
-            log_msg "✓ Sink Bluetooth definido: $SINK_NAME"
+            if pactl set-default-sink "$SINK_NAME" 2>/dev/null; then
+                log_msg "✓ Sink Bluetooth definido: $SINK_NAME"
+            fi
         fi
         exit 0
     fi
 
-    log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS de conectar"
+    # Tentar conectar
+    if [ $((attempt % 10)) -eq 0 ]; then
+        log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS de conectar"
+    fi
     bluetoothctl connect "$AMP_MAC" > /dev/null 2>&1
     sleep $RETRY_INTERVAL
     ((attempt++))
 done
 
-log_msg "Amplificador não disponível após $MAX_ATTEMPTS tentativas. Timer vai tentar novamente em 15s."
+log_msg "⚠ Não conseguiu conectar após $MAX_ATTEMPTS tentativas. Timer vai tentar novamente em 15s."
 exit 0
 EOFSCRIPT
 
@@ -171,7 +206,7 @@ Description=Check Bluetooth connection periodically
 After=bluetooth.service
 
 [Timer]
-OnBootSec=45s
+OnBootSec=90s
 OnUnitActiveSec=15s
 AccuracySec=1s
 
