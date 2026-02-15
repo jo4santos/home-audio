@@ -157,7 +157,6 @@ User=${USER}
 Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
 ExecStartPre=/bin/sleep 5
 ExecStart=/usr/local/bin/bluetooth-reconnect.sh
-RemainAfterExit=yes
 Restart=on-failure
 RestartSec=10
 TimeoutStartSec=120
