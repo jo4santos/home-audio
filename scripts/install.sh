@@ -84,7 +84,7 @@ echo "=== 5/6 Script reconexão Bluetooth ==="
 sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
 #!/bin/bash
 AMP_MAC="__AMP_MAC__"
-MAX_ATTEMPTS=60
+MAX_ATTEMPTS=10
 RETRY_INTERVAL=1
 LOG_FILE="/var/log/bluetooth-reconnect.log"
 
@@ -129,8 +129,8 @@ while [ $attempt -lt $MAX_ATTEMPTS ]; do
     ((attempt++))
 done
 
-log_msg "✗ Falha ao conectar após $MAX_ATTEMPTS tentativas"
-exit 1
+log_msg "Amplificador não disponível após $MAX_ATTEMPTS tentativas. Timer vai tentar novamente em 15s."
+exit 0
 EOFSCRIPT
 
 sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-reconnect.sh

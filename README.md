@@ -734,10 +734,11 @@ echo "PRÓXIMO PASSO: Emparelhar Bluetooth em cada RPi"
 ## 📝 Notas Importantes
 
 ### Reconexão Bluetooth
-- O script tenta reconectar durante 60 segundos (tempo suficiente para o amplificador entrar em modo pairing)
 - Timer verifica conexão de **15 em 15 segundos** (conecta rapidamente quando ligares o amplificador)
-- Se a conexão falhar, o script tenta novamente automaticamente
-- O RPi conecta automaticamente quando ligares o amplificador, em menos de 15 segundos
+- Cada verificação tenta conectar **10 vezes** (10 segundos de tentativas)
+- Se falhar, aguarda 15s e tenta novamente **para sempre** (nunca desiste)
+- O RPi conecta automaticamente quando ligares o amplificador, geralmente em **menos de 25 segundos**
+- Funciona mesmo que ligues o amplificador horas ou dias depois
 
 ### WiFi Watchdog
 - Verifica conectividade de 2 em 2 minutos
