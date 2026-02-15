@@ -84,7 +84,7 @@ echo "=== 5/6 Script reconexão Bluetooth ==="
 sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
 #!/bin/bash
 AMP_MAC="__AMP_MAC__"
-MAX_ATTEMPTS=60
+MAX_ATTEMPTS=40
 RETRY_INTERVAL=1
 LOG_FILE="/var/log/bluetooth-reconnect.log"
 
@@ -206,7 +206,7 @@ Description=Check Bluetooth connection periodically
 After=bluetooth.service
 
 [Timer]
-OnBootSec=90s
+OnBootSec=15s
 OnUnitActiveSec=15s
 AccuracySec=1s
 
