@@ -39,7 +39,7 @@ script:
             } %}
             {{ ips[divisao] }}
     mode: parallel
-    max: 7
+    max: 8
 
   bt_unpair:
     alias: "BT Desligar"
@@ -64,4 +64,4 @@ script:
             } %}
             {{ ips[divisao] }}
     mode: parallel
-    max: 7
+    max: 8
