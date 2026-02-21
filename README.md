@@ -388,12 +388,35 @@ shell_command:
 
 Estas duas entradas servem **todas as divisões** — o user e IP são passados por cada card.
 
-### Passo 3: Adicionar card ao Dashboard (por divisão)
+### Passo 3: Adicionar scripts e card ao Dashboard (por divisão)
 
-Após `./deploy.sh <divisao>`, o ficheiro `ha-snippets/<divisao>.yaml` é gerado automaticamente com o card pronto. Cole o YAML no editor Lovelace (Add Card → Manual):
+Após `./deploy.sh <divisao>`, o ficheiro `ha-snippets/<divisao>.yaml` é gerado automaticamente com tudo pronto em dois blocos:
+
+**Bloco 1** — Adicionar ao `scripts.yaml` (ou secção `script:` do `configuration.yaml`):
 
 ```yaml
-# Exemplo gerado para escritorio:
+bt_pair_escritorio:
+  alias: "BT Ligar — Escritorio"
+  sequence:
+    - action: shell_command.bt_pair
+      data:
+        user: relvasantos
+        ip: 192.168.30.7
+  mode: single
+
+bt_unpair_escritorio:
+  alias: "BT Desligar — Escritorio"
+  sequence:
+    - action: shell_command.bt_unpair
+      data:
+        user: relvasantos
+        ip: 192.168.30.7
+  mode: single
+```
+
+**Bloco 2** — Card Lovelace (Add Card → Manual). O card chama o script — sem `service_data`:
+
+```yaml
 type: horizontal-stack
 cards:
   - type: button
@@ -401,19 +424,13 @@ cards:
     icon: mdi:bluetooth-connect
     tap_action:
       action: call-service
-      service: shell_command.bt_pair
-      service_data:
-        user: relvasantos
-        ip: 192.168.30.7
+      service: script.bt_pair_escritorio
   - type: button
     name: "Desligar — Escritorio"
     icon: mdi:bluetooth-off
     tap_action:
       action: call-service
-      service: shell_command.bt_unpair
-      service_data:
-        user: relvasantos
-        ip: 192.168.30.7
+      service: script.bt_unpair_escritorio
 ```
 
 ### Como funciona o Ligar/Desligar

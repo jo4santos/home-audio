@@ -1,12 +1,33 @@
 # ============================================================
-# Home Assistant — Dashboard card: Escritorio
+# Home Assistant — Config para: Escritorio
 # Gerado por: ./deploy.sh escritorio
 # Data: 2026-02-21
 # RPi: relvasantos@192.168.30.7
 # ============================================================
-# Cole este YAML no editor Lovelace (Add Card → Manual).
-# Requer os shell_commands em ha-snippets/configuration.yaml.
-# ============================================================
+
+
+# --- PASSO 1: Adicionar ao scripts.yaml (ou secção script: do configuration.yaml) ---
+
+bt_pair_escritorio:
+  alias: "BT Ligar — Escritorio"
+  sequence:
+    - action: shell_command.bt_pair
+      data:
+        user: relvasantos
+        ip: 192.168.30.7
+  mode: single
+
+bt_unpair_escritorio:
+  alias: "BT Desligar — Escritorio"
+  sequence:
+    - action: shell_command.bt_unpair
+      data:
+        user: relvasantos
+        ip: 192.168.30.7
+  mode: single
+
+
+# --- PASSO 2: Dashboard card (Add Card → Manual no Lovelace) ---
 
 type: horizontal-stack
 cards:
@@ -15,16 +36,10 @@ cards:
     icon: mdi:bluetooth-connect
     tap_action:
       action: call-service
-      service: shell_command.bt_pair
-      service_data:
-        user: relvasantos
-        ip: 192.168.30.7
+      service: script.bt_pair_escritorio
   - type: button
     name: "Desligar — Escritorio"
     icon: mdi:bluetooth-off
     tap_action:
       action: call-service
-      service: shell_command.bt_unpair
-      service_data:
-        user: relvasantos
-        ip: 192.168.30.7
+      service: script.bt_unpair_escritorio
