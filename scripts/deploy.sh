@@ -76,35 +76,14 @@ ROOM_LABEL=$(echo "$DIVISAO" | awk '{print toupper(substr($0,1,1)) substr($0,2)}
 
 cat > "${HA_SNIPPETS_DIR}/${DIVISAO}.yaml" << EOF
 # ============================================================
-# Home Assistant — Config para: ${ROOM_LABEL}
+# Home Assistant — Dashboard card: ${ROOM_LABEL}
 # Gerado por: ./deploy.sh ${DIVISAO}
 # Data: $(date '+%Y-%m-%d')
-# RPi: ${USER}@${IP_ADDRESS}
 # ============================================================
-
-
-# --- PASSO 1: Adicionar ao scripts.yaml (ou secção script: do configuration.yaml) ---
-
-bt_pair_${DIVISAO}:
-  alias: "BT Ligar — ${ROOM_LABEL}"
-  sequence:
-    - action: shell_command.bt_pair
-      data:
-        user: ${USER}
-        ip: ${IP_ADDRESS}
-  mode: single
-
-bt_unpair_${DIVISAO}:
-  alias: "BT Desligar — ${ROOM_LABEL}"
-  sequence:
-    - action: shell_command.bt_unpair
-      data:
-        user: ${USER}
-        ip: ${IP_ADDRESS}
-  mode: single
-
-
-# --- PASSO 2: Dashboard card (Add Card → Manual no Lovelace) ---
+# Requer os scripts bt_pair e bt_unpair em configuration.yaml
+# (ver ha-snippets/configuration.yaml — adicionar uma única vez).
+# Cole este YAML no editor Lovelace (Add Card → Manual).
+# ============================================================
 
 type: horizontal-stack
 cards:
@@ -113,13 +92,17 @@ cards:
     icon: mdi:bluetooth-connect
     tap_action:
       action: call-service
-      service: script.bt_pair_${DIVISAO}
+      service: script.bt_pair
+      data:
+        divisao: ${DIVISAO}
   - type: button
     name: "Desligar — ${ROOM_LABEL}"
     icon: mdi:bluetooth-off
     tap_action:
       action: call-service
-      service: script.bt_unpair_${DIVISAO}
+      service: script.bt_unpair
+      data:
+        divisao: ${DIVISAO}
 EOF
 
 echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"
