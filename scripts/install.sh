@@ -257,6 +257,10 @@ mkdir -p ~/.config/systemd/user
 systemctl --user enable pulseaudio.service
 systemctl --user start pulseaudio.service
 
+# Habilitar linger para que os serviços do utilizador (PulseAudio, etc.)
+# sobrevivam sem sessões SSH ativas — essencial para áudio e Bluetooth em idle
+sudo loginctl enable-linger ${USER}
+
 echo ""
 echo "=========================================="
 echo "  ✓ Instalação concluída!"
