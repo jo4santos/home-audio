@@ -141,9 +141,13 @@ if [ "$IS_PAIRED" -gt 0 ]; then
         [ "$attempt" -lt 3 ] && sleep 2
     done
 else
-    # Não paired: pair directo pelo MAC (sem scan — MAC já conhecido, poupa ~27s)
-    log_msg "Dispositivo não paired. A fazer pair + trust + connect..."
+    # Não paired: scan curto (10s) + pair + trust + connect
+    # scan off não é necessário antes do pair — poupa 2s
+    # Se o amp não for detectado em 10s, o timer tenta novamente em 15s
+    log_msg "Dispositivo não paired. A fazer scan + pair + trust + connect..."
     (
+        echo "scan on"
+        sleep 10
         echo "pair $AMP_MAC"
         sleep 10
         echo "trust $AMP_MAC"
