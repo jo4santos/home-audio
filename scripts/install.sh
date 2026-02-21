@@ -229,6 +229,7 @@ After=bluetooth.service
 
 [Timer]
 OnBootSec=15s
+OnUnitActiveSec=15s
 
 [Install]
 WantedBy=timers.target
@@ -245,7 +246,7 @@ if ! ping -c 2 -W 3 "$GATEWAY" > /dev/null 2>&1; then
     sleep 5
     sudo ip link set wlan0 up
     sleep 10
-    systemctl start bluetooth-reconnect.service
+    sudo systemctl start bluetooth-reconnect.service
 fi
 EOF
 
