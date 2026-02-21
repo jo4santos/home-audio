@@ -1,0 +1,28 @@
+# ============================================================
+# Home Assistant — Dashboard card: Teste
+# Gerado por: ./deploy.sh teste
+# Data: 2026-02-21
+# ============================================================
+# Requer os scripts bt_pair e bt_unpair em configuration.yaml
+# (ver ha-snippets/configuration.yaml — adicionar uma única vez).
+# Cole este YAML no editor Lovelace (Add Card → Manual).
+# ============================================================
+
+type: horizontal-stack
+cards:
+  - type: button
+    name: "Ligar — Teste"
+    icon: mdi:bluetooth-connect
+    tap_action:
+      action: call-service
+      service: script.bt_pair
+      data:
+        divisao: teste
+  - type: button
+    name: "Desligar — Teste"
+    icon: mdi:bluetooth-off
+    tap_action:
+      action: call-service
+      service: script.bt_unpair
+      data:
+        divisao: teste
