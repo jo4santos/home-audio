@@ -66,6 +66,48 @@ fi
 
 echo ""
 echo "✓ Ficheiros copiados com sucesso!"
+
+# Gerar snippet de configuração para o Home Assistant
+HA_SNIPPETS_DIR="../ha-snippets"
+mkdir -p "$HA_SNIPPETS_DIR"
+
+# Nome legível da divisão (capitalizar primeira letra, compatível com bash 3+)
+ROOM_LABEL=$(echo "$DIVISAO" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+
+cat > "${HA_SNIPPETS_DIR}/${DIVISAO}.yaml" << EOF
+# ============================================================
+# Home Assistant — Dashboard card: ${ROOM_LABEL}
+# Gerado por: ./deploy.sh ${DIVISAO}
+# Data: $(date '+%Y-%m-%d')
+# RPi: ${USER}@${IP_ADDRESS}
+# ============================================================
+# Cole este YAML no editor Lovelace (Add Card → Manual).
+# Requer os shell_commands em ha-snippets/configuration.yaml.
+# ============================================================
+
+type: horizontal-stack
+cards:
+  - type: button
+    name: "Ligar — ${ROOM_LABEL}"
+    icon: mdi:bluetooth-connect
+    tap_action:
+      action: call-service
+      service: shell_command.bt_pair
+      service_data:
+        user: ${USER}
+        ip: ${IP_ADDRESS}
+  - type: button
+    name: "Desligar — ${ROOM_LABEL}"
+    icon: mdi:bluetooth-off
+    tap_action:
+      action: call-service
+      service: shell_command.bt_unpair
+      service_data:
+        user: ${USER}
+        ip: ${IP_ADDRESS}
+EOF
+
+echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"
 echo ""
 echo "Para instalar, executa:"
 echo "  ssh ${USER}@${IP_ADDRESS}"

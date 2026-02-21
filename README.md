@@ -352,9 +352,9 @@ sudo journalctl -u snapclient -f
 
 ---
 
-## 🎛️ Botão de Reconexão Bluetooth no Dashboard do HA
+## 🎛️ Botões Ligar/Desligar Bluetooth no Dashboard do HA
 
-O `install.sh` configura cada RPi para aceitar comandos SSH do Home Assistant e permite correr `systemctl start bluetooth-reconnect.service` sem password (via sudoers).
+O `install.sh` instala `/usr/local/bin/bluetooth-control.sh` em cada RPi e configura permissões SSH para o Home Assistant. O `deploy.sh` gera automaticamente os snippets de configuração em `ha-snippets/`.
 
 Existem **duas chaves SSH** distintas no HA:
 - `root@core-ssh` — addon SSH do HA (acesso manual pelo terminal do addon)
@@ -376,37 +376,51 @@ Reiniciar o HA, chamar `shell_command.generate_ssh_key` e depois `shell_command.
 
 > A chave atual (`root@homeassistant`) já está configurada em `install.sh`. Este passo só é necessário se o HA for reinstalado.
 
-### Passo 2: Adicionar `shell_command` ao `configuration.yaml`
+### Passo 2: Adicionar shell_commands ao `configuration.yaml` (uma única vez)
+
+Copiar o conteúdo de `ha-snippets/configuration.yaml` para o `configuration.yaml` do HA:
 
 ```yaml
 shell_command:
-  reconnect_bt_escritorio: >
-    ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_ed25519
-    relvasantos@192.168.30.7
-    'sudo systemctl start bluetooth-reconnect.service'
+  bt_pair:   "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh pair'"
+  bt_unpair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"
 ```
 
-Repetir para cada divisão com o IP respetivo.
+Estas duas entradas servem **todas as divisões** — o user e IP são passados por cada card.
 
-### Passo 3: Criar Script no HA
+### Passo 3: Adicionar card ao Dashboard (por divisão)
 
-**Settings → Automations & Scenes → Scripts → Add Script**:
+Após `./deploy.sh <divisao>`, o ficheiro `ha-snippets/<divisao>.yaml` é gerado automaticamente com o card pronto. Cole o YAML no editor Lovelace (Add Card → Manual):
 
 ```yaml
-alias: Reconectar BT Escritório
-sequence:
-  - action: shell_command.reconnect_bt_escritorio
-mode: single
+# Exemplo gerado para escritorio:
+type: horizontal-stack
+cards:
+  - type: button
+    name: "Ligar — Escritorio"
+    icon: mdi:bluetooth-connect
+    tap_action:
+      action: call-service
+      service: shell_command.bt_pair
+      service_data:
+        user: relvasantos
+        ip: 192.168.30.7
+  - type: button
+    name: "Desligar — Escritorio"
+    icon: mdi:bluetooth-off
+    tap_action:
+      action: call-service
+      service: shell_command.bt_unpair
+      service_data:
+        user: relvasantos
+        ip: 192.168.30.7
 ```
 
-### Passo 4: Adicionar card Tile ao Dashboard
+### Como funciona o Ligar/Desligar
 
-```yaml
-type: tile
-entity: script.reconectar_bt_escritorio
-name: Reconectar BT
-icon: mdi:bluetooth-connect
-```
+- **Desligar**: cria uma flag `/var/lib/bluetooth-reconnect/manual-mode` no RPi, desemparelha o amplificador. O timer de reconexão automática fica pausado — podes ligar um telemóvel ou outro dispositivo sem o RPi tentar voltar a emparelhar.
+- **Ligar**: remove a flag e dispara o serviço de reconexão. O script faz scan+pair+trust+connect se necessário.
+- **Reboot**: a flag persiste em `/var/lib/` — se desligaste antes do reboot, continua desligado até clicares Ligar.
 
 ---
 
@@ -441,14 +455,16 @@ home-audio/
 ├── configs/                       # Configurações por divisão
 │   ├── escritorio.env
 │   ├── suite.env
-│   ├── cozinha.env
-│   ├── sala.env
-│   ├── wcsuite.env
-│   ├── quartocriancas.env
-│   └── quartodesporto.env
+│   ├── ...
+│   └── exemplo.env
+├── ha-snippets/                   # Snippets de config para o Home Assistant
+│   ├── configuration.yaml         # shell_commands partilhados (adicionar ao HA uma vez)
+│   ├── escritorio.yaml            # Card Lovelace — gerado por deploy.sh
+│   └── ...                        # (um ficheiro por divisão, gerado automaticamente)
 └── scripts/
-    ├── install.sh                 # Script principal de instalação
-    └── deploy.sh                  # Script para copiar ficheiros
+    ├── install.sh                 # Script principal de instalação (corre no RPi)
+    ├── deploy.sh                  # Copia ficheiros para RPi e gera ha-snippets/
+    └── install-all.sh             # Instala em todas as divisões
 ```
 
 ---
@@ -824,10 +840,12 @@ echo "PRÓXIMO PASSO: Emparelhar Bluetooth em cada RPi"
 ### Reconexão Bluetooth Automática
 - **Timer**: Corre de 15 em 15 segundos; fornece os retries automaticamente sem o script precisar de loops
 - **Já conectado**: Exit silencioso — não polui o log quando está tudo bem
+- **Modo manual**: Se a flag `/var/lib/bluetooth-reconnect/manual-mode` existir, o script sai silenciosamente — permite usar o amplificador com outro dispositivo sem interferência
 - **Dispositivo paired**: Tenta `connect` até 3 vezes por ciclo (sessão `bluetoothctl` interativa cada)
 - **Dispositivo não paired**: Fluxo completo numa sessão — `scan on` (25s) → `scan off` → `pair` → `trust` → `connect`
 - **Sessão única**: Todos os comandos `bluetoothctl` correm numa única sessão persistente, igual ao processo manual — processos separados perdem contexto D-Bus e o `pair` falha
 - **Grupo bluetooth**: O utilizador tem de estar no grupo `bluetooth` para que o PolicyKit autorize operações fora de sessões interativas (serviço systemd, HA `shell_command`); `install.sh` garante isto com `usermod -aG bluetooth`
+- **Linger**: `loginctl enable-linger` garante que o PulseAudio do utilizador sobrevive sem sessões SSH ativas
 - Após boot, se o amplificador estiver ligado, conecta em **menos de 30 segundos**
 
 ### WiFi Watchdog
@@ -904,6 +922,6 @@ Se o RPi não arrancar ou tiver problemas graves:
 
 ---
 
-**Versão**: 2.1
+**Versão**: 2.2
 **Última atualização**: 2026-02-21
 **Autor**: José Santos

@@ -1,0 +1,13 @@
+# ============================================================
+# Home Assistant — Shell Commands (adicionar ao configuration.yaml)
+# ============================================================
+# Estas entradas são partilhadas por TODAS as divisões.
+# Adicionar uma única vez ao configuration.yaml.
+#
+# Cada botão de dashboard passa o user e ip da sua divisão
+# via service_data — ver ha-snippets/<divisao>.yaml.
+# ============================================================
+
+shell_command:
+  bt_pair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh pair'"
+  bt_unpair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"

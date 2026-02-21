@@ -1,0 +1,30 @@
+# ============================================================
+# Home Assistant — Dashboard card: Escritorio
+# Gerado por: ./deploy.sh escritorio
+# Data: 2026-02-21
+# RPi: relvasantos@192.168.30.7
+# ============================================================
+# Cole este YAML no editor Lovelace (Add Card → Manual).
+# Requer os shell_commands em ha-snippets/configuration.yaml.
+# ============================================================
+
+type: horizontal-stack
+cards:
+  - type: button
+    name: "Ligar — Escritorio"
+    icon: mdi:bluetooth-connect
+    tap_action:
+      action: call-service
+      service: shell_command.bt_pair
+      service_data:
+        user: relvasantos
+        ip: 192.168.30.7
+  - type: button
+    name: "Desligar — Escritorio"
+    icon: mdi:bluetooth-off
+    tap_action:
+      action: call-service
+      service: shell_command.bt_unpair
+      service_data:
+        user: relvasantos
+        ip: 192.168.30.7

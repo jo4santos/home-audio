@@ -59,6 +59,12 @@ sudo rfkill unblock bluetooth
 sudo systemctl restart bluetooth
 sleep 2
 
+# Directório para flag de modo manual (impede reconexão automática quando
+# utilizador desemparelha intencionalmente via botão HA)
+sudo mkdir -p /var/lib/bluetooth-reconnect
+sudo chown ${USER}:${USER} /var/lib/bluetooth-reconnect
+sudo chmod 755 /var/lib/bluetooth-reconnect
+
 echo ""
 echo "=== 4/7 Configurar Snapcast ==="
 sudo tee /etc/default/snapclient > /dev/null << EOF
@@ -82,7 +88,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable snapclient
 
 echo ""
-echo "=== 5/7 Script reconexão Bluetooth ==="
+echo "=== 5/7 Scripts Bluetooth ==="
 sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
 #!/bin/bash
 AMP_MAC="__AMP_MAC__"
@@ -94,6 +100,12 @@ log_msg() {
 
 # Exit silencioso se já conectado — o timer corre a cada 15s, não queremos spam no log
 if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
+    exit 0
+fi
+
+FLAG_FILE="/var/lib/bluetooth-reconnect/manual-mode"
+# Exit silencioso se modo manual activo — utilizador desemparelhou intencionalmente via HA
+if [ -f "$FLAG_FILE" ]; then
     exit 0
 fi
 
@@ -162,6 +174,51 @@ EOFSCRIPT
 sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-reconnect.sh
 sudo chmod +x /usr/local/bin/bluetooth-reconnect.sh
 
+# Script de controlo manual: pair | unpair (chamado pelo Home Assistant via SSH)
+sudo tee /usr/local/bin/bluetooth-control.sh > /dev/null << 'EOFSCRIPT'
+#!/bin/bash
+# Uso: bluetooth-control.sh pair | unpair
+AMP_MAC="__AMP_MAC__"
+LOG_FILE="/var/log/bluetooth-reconnect.log"
+FLAG_FILE="/var/lib/bluetooth-reconnect/manual-mode"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+}
+
+case "${1:-}" in
+    pair)
+        log_msg "Emparelhar: a desactivar modo manual e iniciar reconexão..."
+        # Remover flag — o timer retoma a gestão automática
+        rm -f "$FLAG_FILE"
+        # Disparar serviço de reconexão sem bloquear (devolve imediatamente ao HA)
+        sudo systemctl start bluetooth-reconnect.service --no-block 2>/dev/null || true
+        log_msg "✓ Modo manual desactivado. Reconexão iniciada."
+        ;;
+    unpair)
+        log_msg "Desemparelhar: a activar modo manual e remover $AMP_MAC..."
+        # Criar flag — impede o timer de voltar a emparelhar automaticamente
+        touch "$FLAG_FILE"
+        # Desligar e remover da lista de dispositivos paired
+        (
+            echo "disconnect $AMP_MAC"
+            sleep 3
+            echo "remove $AMP_MAC"
+            sleep 2
+            echo "quit"
+        ) | bluetoothctl | tee -a "$LOG_FILE"
+        log_msg "✓ Desemparelhado. Timer pausado. Clica 'Ligar' para retomar."
+        ;;
+    *)
+        echo "Uso: $0 pair | unpair"
+        exit 1
+        ;;
+esac
+EOFSCRIPT
+
+sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-control.sh
+sudo chmod +x /usr/local/bin/bluetooth-control.sh
+
 # Criar ficheiro de log com permissões corretas
 sudo touch /var/log/bluetooth-reconnect.log
 sudo chown ${USER}:${USER} /var/log/bluetooth-reconnect.log
@@ -184,7 +241,8 @@ done
 echo "✓ Chaves SSH do Home Assistant adicionadas"
 chmod 600 ~/.ssh/authorized_keys
 
-echo "${USER} ALL=(ALL) NOPASSWD: /bin/systemctl start bluetooth-reconnect.service" | sudo tee /etc/sudoers.d/bluetooth-reconnect > /dev/null
+RFKILL_PATH=$(which rfkill 2>/dev/null || echo /usr/sbin/rfkill)
+echo "${USER} ALL=(ALL) NOPASSWD: /bin/systemctl start bluetooth-reconnect.service, ${RFKILL_PATH} unblock bluetooth" | sudo tee /etc/sudoers.d/bluetooth-reconnect > /dev/null
 sudo chmod 440 /etc/sudoers.d/bluetooth-reconnect
 echo "✓ Sudoers configurado para Home Assistant"
 
