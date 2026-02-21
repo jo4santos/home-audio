@@ -141,15 +141,11 @@ if [ "$IS_PAIRED" -gt 0 ]; then
         [ "$attempt" -lt 3 ] && sleep 2
     done
 else
-    # Não paired: fluxo completo numa única sessão interativa (igual ao processo manual)
-    log_msg "Dispositivo não paired. A fazer scan + pair + trust + connect..."
+    # Não paired: pair directo pelo MAC (sem scan — MAC já conhecido, poupa ~27s)
+    log_msg "Dispositivo não paired. A fazer pair + trust + connect..."
     (
-        echo "scan on"
-        sleep 25
-        echo "scan off"
-        sleep 2
         echo "pair $AMP_MAC"
-        sleep 8
+        sleep 10
         echo "trust $AMP_MAC"
         sleep 2
         echo "connect $AMP_MAC"
