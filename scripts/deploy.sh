@@ -85,24 +85,52 @@ cat > "${HA_SNIPPETS_DIR}/${DIVISAO}.yaml" << EOF
 # Cole este YAML no editor Lovelace (Add Card → Manual).
 # ============================================================
 
-type: horizontal-stack
+type: grid
 cards:
-  - type: button
-    name: "Ligar — ${ROOM_LABEL}"
+  - type: heading
+    icon: mdi:cast-audio
+    heading: ${ROOM_LABEL}
+    heading_style: title
+  - type: tile
+    entity: ${SWITCH_ENTITY}
+    name: Controlador
+    icon: mdi:speaker-bluetooth
+    vertical: false
+    features_position: bottom
+    grid_options:
+      columns: full
+  - type: tile
+    entity: ${SWITCH_ENTITY}
+    name: Emparelhar
     icon: mdi:bluetooth-connect
+    color: blue
+    show_entity_picture: false
+    hide_state: true
+    vertical: false
     tap_action:
       action: call-service
       service: script.bt_pair
       data:
         divisao: ${DIVISAO}
-  - type: button
-    name: "Desligar — ${ROOM_LABEL}"
+    icon_tap_action:
+      action: none
+    features_position: bottom
+  - type: tile
+    entity: ${SWITCH_ENTITY}
+    name: Esquecer
     icon: mdi:bluetooth-off
+    color: blue
+    show_entity_picture: false
+    hide_state: true
+    vertical: false
     tap_action:
       action: call-service
       service: script.bt_unpair
       data:
         divisao: ${DIVISAO}
+    icon_tap_action:
+      action: none
+    features_position: bottom
 EOF
 
 echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"
