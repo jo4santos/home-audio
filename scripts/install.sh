@@ -28,16 +28,16 @@ if [[ ! $REPLY =~ ^[Ss]$ ]]; then
 fi
 
 echo ""
-echo "=== 1/6 Atualizar sistema ==="
+echo "=== 1/7 Atualizar sistema ==="
 sudo apt update
 sudo apt upgrade -y
 
 echo ""
-echo "=== 2/6 Instalar pacotes ==="
+echo "=== 2/7 Instalar pacotes ==="
 sudo apt install -y snapclient bluetooth bluez bluez-tools pulseaudio pulseaudio-module-bluetooth alsa-utils
 
 echo ""
-echo "=== 3/6 Configurar Bluetooth ==="
+echo "=== 3/7 Configurar Bluetooth ==="
 sudo tee /etc/bluetooth/main.conf > /dev/null << EOF
 [General]
 Enable=Source,Sink,Media,Socket
@@ -58,7 +58,7 @@ sudo systemctl restart bluetooth
 sleep 2
 
 echo ""
-echo "=== 4/6 Configurar Snapcast ==="
+echo "=== 4/7 Configurar Snapcast ==="
 sudo tee /etc/default/snapclient > /dev/null << EOF
 SNAPCLIENT_OPTS="-h ${SNAPSERVER_IP} --hostID ${PLAYER_NAME} -s pulse"
 START_SNAPCLIENT=true
@@ -80,7 +80,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable snapclient
 
 echo ""
-echo "=== 5/6 Script reconexão Bluetooth ==="
+echo "=== 5/7 Script reconexão Bluetooth ==="
 sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
 #!/bin/bash
 AMP_MAC="__AMP_MAC__"
@@ -92,29 +92,27 @@ log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
 }
 
+# Verificar PRIMEIRO se já está conectado - antes de tocar em qualquer coisa
+if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
+    log_msg "✓ Já está conectado. Nada a fazer."
+    exit 0
+fi
+
+# Só chegar aqui se não estiver conectado
 # Desbloquear Bluetooth (caso esteja bloqueado)
 sudo rfkill unblock bluetooth
 sleep 1
 
 # Garantir que o Bluetooth está ligado
 log_msg "A ligar Bluetooth..."
-for i in {1..5}; do
-    if bluetoothctl power on > /dev/null 2>&1; then
-        log_msg "✓ Bluetooth ligado"
-        break
-    fi
-    log_msg "Tentativa $i/5 de ligar Bluetooth..."
+if ! bluetoothctl power on > /dev/null 2>&1; then
     sleep 2
-done
+    bluetoothctl power on > /dev/null 2>&1 || true
+fi
+log_msg "✓ Bluetooth ligado"
 
 # Aguardar Bluetooth ficar pronto
 sleep 3
-
-# Verificar PRIMEIRO se já está conectado - se sim, não fazer nada
-if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
-    log_msg "✓ Já está conectado. Nada a fazer."
-    exit 0
-fi
 
 # Verificar se dispositivo está paired
 IS_PAIRED=$(bluetoothctl devices Paired 2>/dev/null | grep -c "$AMP_MAC")
@@ -170,7 +168,7 @@ while [ $attempt -lt $MAX_ATTEMPTS ]; do
     ((attempt++))
 done
 
-log_msg "⚠ Não conseguiu conectar após $MAX_ATTEMPTS tentativas. Timer vai tentar novamente em 15s."
+log_msg "⚠ Não conseguiu conectar após $MAX_ATTEMPTS tentativas. Usa o botão no Home Assistant para tentar novamente."
 exit 0
 EOFSCRIPT
 
@@ -183,7 +181,25 @@ sudo chown ${USER}:${USER} /var/log/bluetooth-reconnect.log
 sudo chmod 644 /var/log/bluetooth-reconnect.log
 
 echo ""
-echo "=== 6/6 Criar serviços ==="
+echo "=== 6/7 Acesso SSH do Home Assistant ==="
+HA_PUBKEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG373a5ihDT/0CyQiBN6W8dk7NY+J1aKv32JLctvx0r0 root@core-ssh"
+
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+if ! grep -qF "$HA_PUBKEY" ~/.ssh/authorized_keys 2>/dev/null; then
+    echo "$HA_PUBKEY" >> ~/.ssh/authorized_keys
+    echo "✓ Chave SSH do Home Assistant adicionada"
+else
+    echo "✓ Chave SSH do Home Assistant já existe"
+fi
+chmod 600 ~/.ssh/authorized_keys
+
+echo "${USER} ALL=(ALL) NOPASSWD: /bin/systemctl start bluetooth-reconnect.service" | sudo tee /etc/sudoers.d/bluetooth-reconnect > /dev/null
+sudo chmod 440 /etc/sudoers.d/bluetooth-reconnect
+echo "✓ Sudoers configurado para Home Assistant"
+
+echo ""
+echo "=== 7/7 Criar serviços ==="
 
 sudo tee /etc/systemd/system/bluetooth-reconnect.service > /dev/null << EOF
 [Unit]
@@ -213,8 +229,6 @@ After=bluetooth.service
 
 [Timer]
 OnBootSec=15s
-OnUnitActiveSec=15s
-AccuracySec=1s
 
 [Install]
 WantedBy=timers.target
