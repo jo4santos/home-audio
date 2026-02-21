@@ -99,20 +99,20 @@ if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
 fi
 
 # Só chegar aqui se não estiver conectado
-# Desbloquear Bluetooth (caso esteja bloqueado)
-sudo rfkill unblock bluetooth
-sleep 1
 
-# Garantir que o Bluetooth está ligado
-log_msg "A ligar Bluetooth..."
-if ! bluetoothctl power on > /dev/null 2>&1; then
-    sleep 2
-    bluetoothctl power on > /dev/null 2>&1 || true
+# Desbloquear apenas se estiver bloqueado (evita resetar adaptador desnecessariamente)
+if rfkill list bluetooth 2>/dev/null | grep -q "Soft blocked: yes"; then
+    log_msg "Bluetooth bloqueado. A desbloquear..."
+    sudo rfkill unblock bluetooth
+    sleep 1
 fi
-log_msg "✓ Bluetooth ligado"
 
-# Aguardar Bluetooth ficar pronto
-sleep 3
+# Ligar apenas se estiver desligado (evita ciclar o adaptador desnecessariamente)
+if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
+    log_msg "A ligar Bluetooth..."
+    bluetoothctl power on > /dev/null 2>&1 || true
+    sleep 3
+fi
 
 # Verificar se dispositivo está paired
 IS_PAIRED=$(bluetoothctl devices Paired 2>/dev/null | grep -c "$AMP_MAC")
