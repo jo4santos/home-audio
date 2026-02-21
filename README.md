@@ -519,12 +519,27 @@ sudo journalctl -u bluetooth-reconnect -f
 pactl list short sinks | grep bluez
 ```
 
-### Bluetooth não conecta (geral)
+### Bluetooth não conecta via serviço/HA mas funciona manualmente
 
-O sistema agora faz **re-pair automático**, mas se precisares de diagnosticar:
+A causa mais comum é o utilizador **não estar no grupo `bluetooth`**. Sem esse grupo, o PolicyKit recusa operações de `pair`/`connect` quando chamadas fora de uma sessão interativa (serviço systemd ou `shell_command` do HA).
 
 ```bash
-# Ver logs de reconexão em tempo real (mostra se está em Fase 1 ou Fase 2)
+# Verificar grupos
+groups relvasantos
+
+# Se "bluetooth" não aparecer, adicionar:
+sudo usermod -aG bluetooth relvasantos
+
+# Confirmar (nova sessão SSH ou reboot)
+groups
+```
+
+`install.sh` já inclui este passo. Se instalaste antes desta correção, aplica manualmente.
+
+### Bluetooth não conecta (geral)
+
+```bash
+# Ver logs de reconexão em tempo real
 sudo journalctl -u bluetooth-reconnect -f
 
 # Ver últimas 100 linhas do log
@@ -807,15 +822,13 @@ echo "PRÓXIMO PASSO: Emparelhar Bluetooth em cada RPi"
 ## 📝 Notas Importantes
 
 ### Reconexão Bluetooth Automática
-- **No boot**: Aguarda 90 segundos antes de começar (dá tempo aos amplificadores sairem de modo pairing)
-- **Tentativas**: Até 60 tentativas de conexão (60 segundos) por ciclo
-- **Timer**: Repete de 15 em 15 segundos indefinidamente
-- **Nunca remove pairing**: Mantém pairing existente sempre (mais estável)
-- **Initial pairing**: Se dispositivo não estiver paired, faz pairing inicial automaticamente
-- **Ideal para amplificadores eissound 5269e**: Resolve o problema de amplificadores que entram em modo pairing ao ligar da corrente
-- O RPi conecta automaticamente quando ligares o amplificador
-- Após boot, se ligares o amplificador, conecta em **menos de 2 minutos**
-- **Nunca desiste**: Continua a tentar indefinidamente até conseguir
+- **Timer**: Corre de 15 em 15 segundos; fornece os retries automaticamente sem o script precisar de loops
+- **Já conectado**: Exit silencioso — não polui o log quando está tudo bem
+- **Dispositivo paired**: Tenta `connect` até 3 vezes por ciclo (sessão `bluetoothctl` interativa cada)
+- **Dispositivo não paired**: Fluxo completo numa sessão — `scan on` (25s) → `scan off` → `pair` → `trust` → `connect`
+- **Sessão única**: Todos os comandos `bluetoothctl` correm numa única sessão persistente, igual ao processo manual — processos separados perdem contexto D-Bus e o `pair` falha
+- **Grupo bluetooth**: O utilizador tem de estar no grupo `bluetooth` para que o PolicyKit autorize operações fora de sessões interativas (serviço systemd, HA `shell_command`); `install.sh` garante isto com `usermod -aG bluetooth`
+- Após boot, se o amplificador estiver ligado, conecta em **menos de 30 segundos**
 
 ### WiFi Watchdog
 - Verifica conectividade de 2 em 2 minutos
@@ -891,6 +904,6 @@ Se o RPi não arrancar ou tiver problemas graves:
 
 ---
 
-**Versão**: 2.0
-**Última atualização**: 2026-02-14
+**Versão**: 2.1
+**Última atualização**: 2026-02-21
 **Autor**: José Santos

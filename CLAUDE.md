@@ -36,8 +36,8 @@ bash install.sh                    # must have config.env in same dir
 ### What `install.sh` Installs on Each RPi
 
 - **Snapclient** (`snapclient`) — connects to Snapcast server at `192.168.2.100`, uses PulseAudio sink, identifies itself by `PLAYER_NAME`; runs as the user (not root) to access PulseAudio; waits 10s before starting
-- **`/usr/local/bin/bluetooth-reconnect.sh`** — checks if already connected (exits early), does initial pairing if unpaired, then tries to connect up to 40 times
-- **`bluetooth-reconnect.timer`** — systemd timer: first run 15s after boot, then every 15s indefinitely
+- **`/usr/local/bin/bluetooth-reconnect.sh`** — single interactive `bluetoothctl` session (mirrors manual workflow); silent exit if already connected; if paired tries connect up to 3×; if not paired does full scan→pair→trust→connect flow
+- **`bluetooth-reconnect.timer`** — systemd timer: first run 15s after boot, then every 15s indefinitely; provides automatic retry without the script needing its own loop
 - **`/usr/local/bin/wifi-watchdog.sh`** — pings gateway `192.168.30.1`, restarts `wlan0` if unreachable, then triggers `bluetooth-reconnect.service`; runs via cron every 2 minutes
 
 ### Room-to-IP Mapping
@@ -130,8 +130,10 @@ icon: mdi:bluetooth-connect
 
 ## Important Constraints
 
-- **Bluetooth pairing must be done manually** on each RPi — it cannot be automated by `install.sh`
+- **Bluetooth pairing must be done manually** on each RPi before auto-reconnect works — `install.sh` automates everything else
 - `install.sh` uses `set -e` — any failed command aborts the install
 - The `bluetooth-reconnect.sh` script is written to `/usr/local/bin/` with the `AMP_MAC` placeholder substituted by `sed` during install
 - Snapclient runs as the regular user (not root) so it can access the PulseAudio session at `XDG_RUNTIME_DIR=/run/user/1000`
 - `install-all.sh` must be run from `scripts/` (it calls `./deploy.sh` relatively)
+- **User must be in the `bluetooth` group** — without it, PolicyKit denies `pair`/`connect` operations when called outside an interactive session (e.g. from a systemd service or HA `shell_command`). `install.sh` adds the user via `usermod -aG bluetooth`
+- **`bluetoothctl` must run as a single persistent session** — separate `echo | bluetoothctl` processes lose D-Bus context between calls; always pipe the full command sequence into one session

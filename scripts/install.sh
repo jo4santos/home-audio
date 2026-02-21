@@ -92,22 +92,21 @@ log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
 }
 
-# Verificar PRIMEIRO se já está conectado - antes de tocar em qualquer coisa
+# Exit silencioso se já conectado — o timer corre a cada 15s, não queremos spam no log
 if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
-    log_msg "✓ Já está conectado. Nada a fazer."
     exit 0
 fi
 
-# Só chegar aqui se não estiver conectado
+log_msg "Não conectado. A iniciar reconexão..."
 
-# Desbloquear apenas se estiver bloqueado (evita resetar adaptador desnecessariamente)
+# Desbloquear apenas se estiver bloqueado (evita resetar adaptador)
 if rfkill list bluetooth 2>/dev/null | grep -q "Soft blocked: yes"; then
     log_msg "Bluetooth bloqueado. A desbloquear..."
     sudo rfkill unblock bluetooth
     sleep 1
 fi
 
-# Ligar apenas se estiver desligado (evita ciclar o adaptador desnecessariamente)
+# Ligar apenas se estiver desligado (evita ciclar adaptador)
 if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
     log_msg "A ligar Bluetooth..."
     bluetoothctl power on > /dev/null 2>&1 || true
@@ -118,15 +117,19 @@ fi
 IS_PAIRED=$(bluetoothctl devices Paired 2>/dev/null | grep -c "$AMP_MAC")
 
 if [ "$IS_PAIRED" -gt 0 ]; then
-    # Dispositivo já paired: connect numa única sessão interativa (como manualmente)
-    log_msg "Dispositivo paired. A conectar..."
-    (
-        echo "connect $AMP_MAC"
-        sleep 15
-        echo "quit"
-    ) | bluetoothctl | tee -a "$LOG_FILE"
+    # Paired: tentar conectar até 3 vezes (cada uma numa sessão interativa)
+    log_msg "Dispositivo paired. A tentar conectar..."
+    for attempt in 1 2 3; do
+        (
+            echo "connect $AMP_MAC"
+            sleep 8
+            echo "quit"
+        ) | bluetoothctl >> "$LOG_FILE" 2>&1
+        bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes" && break
+        [ "$attempt" -lt 3 ] && sleep 2
+    done
 else
-    # Dispositivo não paired: fluxo completo numa única sessão interativa
+    # Não paired: fluxo completo numa única sessão interativa (igual ao processo manual)
     log_msg "Dispositivo não paired. A fazer scan + pair + trust + connect..."
     (
         echo "scan on"
@@ -143,14 +146,14 @@ else
     ) | bluetoothctl | tee -a "$LOG_FILE"
 fi
 
-# Verificar resultado e configurar sink
+# Verificar resultado e configurar sink PulseAudio
 sleep 2
 if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
     log_msg "✓ Conectado com sucesso"
     SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
     [ -n "$SINK_NAME" ] && pactl set-default-sink "$SINK_NAME" 2>/dev/null && log_msg "✓ Sink definido: $SINK_NAME"
 else
-    log_msg "⚠ Não conectou. Ver log acima para detalhes do bluetoothctl."
+    log_msg "⚠ Não conectou (amplificador desligado ou fora de alcance)."
 fi
 
 exit 0
