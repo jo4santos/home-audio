@@ -182,16 +182,19 @@ sudo chmod 644 /var/log/bluetooth-reconnect.log
 
 echo ""
 echo "=== 6/7 Acesso SSH do Home Assistant ==="
-HA_PUBKEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG373a5ihDT/0CyQiBN6W8dk7NY+J1aKv32JLctvx0r0 root@core-ssh"
+# Chave do addon SSH (core-ssh) — para acesso manual pelo terminal do addon
+HA_PUBKEY_ADDON="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG373a5ihDT/0CyQiBN6W8dk7NY+J1aKv32JLctvx0r0 root@core-ssh"
+# Chave do container principal do HA — necessária para shell_command no configuration.yaml
+HA_PUBKEY_CONTAINER="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFgbSWq8kU6+UiS9xaFYXx4pEraO5cjOfn3KUmwhYh5K root@homeassistant"
 
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
-if ! grep -qF "$HA_PUBKEY" ~/.ssh/authorized_keys 2>/dev/null; then
-    echo "$HA_PUBKEY" >> ~/.ssh/authorized_keys
-    echo "✓ Chave SSH do Home Assistant adicionada"
-else
-    echo "✓ Chave SSH do Home Assistant já existe"
-fi
+for KEY in "$HA_PUBKEY_ADDON" "$HA_PUBKEY_CONTAINER"; do
+    if ! grep -qF "$KEY" ~/.ssh/authorized_keys 2>/dev/null; then
+        echo "$KEY" >> ~/.ssh/authorized_keys
+    fi
+done
+echo "✓ Chaves SSH do Home Assistant adicionadas"
 chmod 600 ~/.ssh/authorized_keys
 
 echo "${USER} ALL=(ALL) NOPASSWD: /bin/systemctl start bluetooth-reconnect.service" | sudo tee /etc/sudoers.d/bluetooth-reconnect > /dev/null

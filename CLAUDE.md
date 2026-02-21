@@ -78,6 +78,56 @@ pactl list short sinks | grep bluez
 sudo systemctl start bluetooth-reconnect.service
 ```
 
+## Home Assistant Dashboard Button
+
+Cada RPi expõe o `bluetooth-reconnect.service` ao HA via SSH. O `install.sh` adiciona duas chaves SSH ao `authorized_keys` do RPi:
+
+- `root@core-ssh` — addon SSH do HA (acesso manual pelo terminal)
+- `root@homeassistant` — container principal do HA (necessário para `shell_command`)
+
+### Gerar a chave do container principal (primeira vez)
+
+A chave `root@homeassistant` **não existe por defeito**. Tem de ser gerada uma vez no HA:
+
+1. Adicionar ao `configuration.yaml`:
+   ```yaml
+   shell_command:
+     generate_ssh_key: "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
+     get_ssh_pubkey: "cat /root/.ssh/id_ed25519.pub"
+   ```
+2. Reiniciar o HA e chamar `shell_command.generate_ssh_key`
+3. Chamar `shell_command.get_ssh_pubkey` — copiar o output e atualizar `HA_PUBKEY_CONTAINER` em `install.sh`
+
+### Configurar o botão Tile
+
+No `configuration.yaml`:
+
+```yaml
+shell_command:
+  reconnect_bt_escritorio: >
+    ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_ed25519
+    relvasantos@192.168.30.7
+    'sudo systemctl start bluetooth-reconnect.service'
+```
+
+Criar um script em **Settings → Automations & Scenes → Scripts**:
+
+```yaml
+alias: Reconectar BT Escritório
+sequence:
+  - action: shell_command.reconnect_bt_escritorio
+mode: single
+```
+
+Adicionar card ao dashboard:
+
+```yaml
+type: tile
+entity: script.reconectar_bt_escritorio
+name: Reconectar BT
+icon: mdi:bluetooth-connect
+```
+
 ## Important Constraints
 
 - **Bluetooth pairing must be done manually** on each RPi — it cannot be automated by `install.sh`

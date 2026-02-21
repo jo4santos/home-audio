@@ -352,6 +352,64 @@ sudo journalctl -u snapclient -f
 
 ---
 
+## 🎛️ Botão de Reconexão Bluetooth no Dashboard do HA
+
+O `install.sh` configura cada RPi para aceitar comandos SSH do Home Assistant e permite correr `systemctl start bluetooth-reconnect.service` sem password (via sudoers).
+
+Existem **duas chaves SSH** distintas no HA:
+- `root@core-ssh` — addon SSH do HA (acesso manual pelo terminal do addon)
+- `root@homeassistant` — container principal do HA (necessário para `shell_command`)
+
+O `install.sh` adiciona ambas ao `authorized_keys` do RPi. A chave `root@homeassistant` **não existe por defeito** e tem de ser gerada uma vez.
+
+### Passo 1: Gerar chave SSH no container principal do HA (primeira vez)
+
+Adicionar ao `configuration.yaml`:
+
+```yaml
+shell_command:
+  generate_ssh_key: "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
+  get_ssh_pubkey: "cat /root/.ssh/id_ed25519.pub"
+```
+
+Reiniciar o HA, chamar `shell_command.generate_ssh_key` e depois `shell_command.get_ssh_pubkey`. O output em `stdout` é a chave pública. Atualizar `HA_PUBKEY_CONTAINER` em `scripts/install.sh` com esse valor.
+
+> A chave atual (`root@homeassistant`) já está configurada em `install.sh`. Este passo só é necessário se o HA for reinstalado.
+
+### Passo 2: Adicionar `shell_command` ao `configuration.yaml`
+
+```yaml
+shell_command:
+  reconnect_bt_escritorio: >
+    ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_ed25519
+    relvasantos@192.168.30.7
+    'sudo systemctl start bluetooth-reconnect.service'
+```
+
+Repetir para cada divisão com o IP respetivo.
+
+### Passo 3: Criar Script no HA
+
+**Settings → Automations & Scenes → Scripts → Add Script**:
+
+```yaml
+alias: Reconectar BT Escritório
+sequence:
+  - action: shell_command.reconnect_bt_escritorio
+mode: single
+```
+
+### Passo 4: Adicionar card Tile ao Dashboard
+
+```yaml
+type: tile
+entity: script.reconectar_bt_escritorio
+name: Reconectar BT
+icon: mdi:bluetooth-connect
+```
+
+---
+
 ## 🔧 Verificação no Home Assistant
 
 1. Abrir Home Assistant: `http://192.168.2.100:8123`
