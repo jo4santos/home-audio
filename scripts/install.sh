@@ -38,6 +38,8 @@ sudo apt install -y snapclient bluetooth bluez bluez-tools pulseaudio pulseaudio
 
 echo ""
 echo "=== 3/7 Configurar Bluetooth ==="
+# Adicionar user ao grupo bluetooth (necessário para operações BlueZ sem sessão polkit activa)
+sudo usermod -aG bluetooth ${USER}
 sudo tee /etc/bluetooth/main.conf > /dev/null << EOF
 [General]
 Enable=Source,Sink,Media,Socket
