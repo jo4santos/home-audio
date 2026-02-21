@@ -135,6 +135,14 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+  - type: custom:mini-media-player
+    entity: media_player.${PLAYER_NAME//-/_}
+    group: false
+    volume_stateless: false
+    artwork: full-cover-fit
+    source: icon
+    sound_mode: full
+    info: short
 EOF
 
 echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"

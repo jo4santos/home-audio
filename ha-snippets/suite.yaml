@@ -1,6 +1,6 @@
 # ============================================================
-# Home Assistant — Dashboard card: Escritorio
-# Gerado por: ./deploy.sh escritorio
+# Home Assistant — Dashboard card: Suite
+# Gerado por: ./deploy.sh suite
 # Data: 2026-02-21
 # ============================================================
 # Requer os scripts bt_pair e bt_unpair em configuration.yaml
@@ -12,10 +12,10 @@ type: grid
 cards:
   - type: heading
     icon: mdi:cast-audio
-    heading: Escritorio
+    heading: Suite
     heading_style: title
   - type: tile
-    entity: input_boolean.bt_escritorio
+    entity: input_boolean.bt_suite
     name: Controlador
     icon: mdi:speaker-bluetooth
     vertical: false
@@ -27,7 +27,7 @@ cards:
     grid_options:
       columns: full
   - type: tile
-    entity: input_boolean.bt_escritorio
+    entity: input_boolean.bt_suite
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -38,12 +38,12 @@ cards:
       action: call-service
       service: script.bt_pair
       data:
-        divisao: escritorio
+        divisao: suite
     icon_tap_action:
       action: none
     features_position: bottom
   - type: tile
-    entity: input_boolean.bt_escritorio
+    entity: input_boolean.bt_suite
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue
@@ -54,12 +54,12 @@ cards:
       action: call-service
       service: script.bt_unpair
       data:
-        divisao: escritorio
+        divisao: suite
     icon_tap_action:
       action: none
     features_position: bottom
   - type: custom:mini-media-player
-    entity: media_player.colunas_escritorio
+    entity: media_player.colunas_suite
     group: false
     volume_stateless: false
     artwork: full-cover-fit
