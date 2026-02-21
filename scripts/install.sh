@@ -84,8 +84,6 @@ echo "=== 5/7 Script reconexão Bluetooth ==="
 sudo tee /usr/local/bin/bluetooth-reconnect.sh > /dev/null << 'EOFSCRIPT'
 #!/bin/bash
 AMP_MAC="__AMP_MAC__"
-MAX_ATTEMPTS=40
-RETRY_INTERVAL=1
 LOG_FILE="/var/log/bluetooth-reconnect.log"
 
 log_msg() {
@@ -114,61 +112,45 @@ if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
     sleep 3
 fi
 
-# Verificar se dispositivo está paired
+# Verificar se está paired
 IS_PAIRED=$(bluetoothctl devices Paired 2>/dev/null | grep -c "$AMP_MAC")
 
-if [ "$IS_PAIRED" -eq 0 ]; then
-    log_msg "⚠ Dispositivo não está paired. A fazer scan para initial pairing..."
-
-    # Tentar fazer scan e pair (apenas se dispositivo não estiver paired)
-    echo -e "scan on" | bluetoothctl > /dev/null 2>&1 &
-    sleep 15
-
-    DEVICE_FOUND=$(bluetoothctl devices 2>/dev/null | grep -c "$AMP_MAC")
-    echo -e "scan off" | bluetoothctl > /dev/null 2>&1
-
-    if [ "$DEVICE_FOUND" -gt 0 ]; then
-        log_msg "✓ Dispositivo encontrado. A fazer pairing inicial..."
-        echo -e "pair $AMP_MAC\ntrust $AMP_MAC\nquit" | bluetoothctl > /dev/null 2>&1
-        sleep 3
-        log_msg "Pairing inicial completo. A tentar conectar..."
-    else
-        log_msg "⚠ Dispositivo não encontrado. Amplificador pode estar desligado. Tenta novamente em 15s."
-        exit 0
-    fi
+if [ "$IS_PAIRED" -gt 0 ]; then
+    # Dispositivo já paired: connect numa única sessão interativa (como manualmente)
+    log_msg "Dispositivo paired. A conectar..."
+    (
+        echo "connect $AMP_MAC"
+        sleep 15
+        echo "quit"
+    ) | bluetoothctl | tee -a "$LOG_FILE"
+else
+    # Dispositivo não paired: fluxo completo numa única sessão interativa
+    log_msg "Dispositivo não paired. A fazer scan + pair + trust + connect..."
+    (
+        echo "scan on"
+        sleep 25
+        echo "scan off"
+        sleep 2
+        echo "pair $AMP_MAC"
+        sleep 8
+        echo "trust $AMP_MAC"
+        sleep 2
+        echo "connect $AMP_MAC"
+        sleep 10
+        echo "quit"
+    ) | bluetoothctl | tee -a "$LOG_FILE"
 fi
 
-# Tentar conectar ao dispositivo paired
-log_msg "A tentar conectar ao amplificador (até 60 tentativas)..."
-attempt=0
-while [ $attempt -lt $MAX_ATTEMPTS ]; do
-    # Verificar se já está conectado
-    if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
-        log_msg "✓ Amplificador conectado (tentativa $((attempt+1)))"
+# Verificar resultado e configurar sink
+sleep 2
+if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
+    log_msg "✓ Conectado com sucesso"
+    SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
+    [ -n "$SINK_NAME" ] && pactl set-default-sink "$SINK_NAME" 2>/dev/null && log_msg "✓ Sink definido: $SINK_NAME"
+else
+    log_msg "⚠ Não conectou. Ver log acima para detalhes do bluetoothctl."
+fi
 
-        # Aguardar um pouco para PulseAudio processar
-        sleep 3
-
-        # Tentar configurar sink (não crítico se falhar)
-        SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
-        if [ -n "$SINK_NAME" ]; then
-            if pactl set-default-sink "$SINK_NAME" 2>/dev/null; then
-                log_msg "✓ Sink Bluetooth definido: $SINK_NAME"
-            fi
-        fi
-        exit 0
-    fi
-
-    # Tentar conectar usando sessão interativa bluetoothctl (como o utilizador faz manualmente)
-    if [ $((attempt % 10)) -eq 0 ]; then
-        log_msg "Tentativa $((attempt+1))/$MAX_ATTEMPTS de conectar"
-    fi
-    echo -e "connect $AMP_MAC\nquit" | bluetoothctl > /dev/null 2>&1
-    sleep $RETRY_INTERVAL
-    ((attempt++))
-done
-
-log_msg "⚠ Não conseguiu conectar após $MAX_ATTEMPTS tentativas. Usa o botão no Home Assistant para tentar novamente."
 exit 0
 EOFSCRIPT
 
