@@ -18,7 +18,7 @@ command_line:
       payload_on: "1"
       payload_off: "0"
       device_class: connectivity
-      scan_interval: 30
+      scan_interval: 15
 
   - binary_sensor:
       <<: *bt_sensor
