@@ -97,10 +97,36 @@ cards:
     icon: mdi:speaker-bluetooth
     vertical: false
     tap_action:
-      action: toggle
+      action: call-service
+      service: switch.turn_on
+      target:
+        entity_id: ${SWITCH_ENTITY}
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "off"
+  - type: tile
+    entity: ${SWITCH_ENTITY}
+    name: Controlador
+    icon: mdi:speaker-bluetooth
+    vertical: false
+    tap_action:
+      action: call-service
+      service: switch.turn_off
+      target:
+        entity_id: ${SWITCH_ENTITY}
+      confirmation:
+        text: "Confirmar: desligar o controlador?"
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "on"
   - type: tile
     entity: binary_sensor.bt_${DIVISAO}
     name: Desligado
@@ -110,9 +136,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_pair
-      data:
-        divisao: ${DIVISAO}
+      service: script.bt_pair_${DIVISAO}
     icon_tap_action:
       action: none
     features_position: bottom
@@ -132,6 +156,27 @@ cards:
       - condition: state
         entity: binary_sensor.bt_${DIVISAO}
         state: "off"
+      - condition: state
+        entity: script.bt_pair_${DIVISAO}
+        state: "off"
+  - type: tile
+    entity: script.bt_pair_${DIVISAO}
+    name: A ligar...
+    icon: mdi:bluetooth-connect
+    hide_state: true
+    vertical: false
+    tap_action:
+      action: none
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "on"
+      - condition: state
+        entity: script.bt_pair_${DIVISAO}
+        state: "on"
   - type: tile
     entity: binary_sensor.bt_${DIVISAO}
     name: Ligado
@@ -141,9 +186,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_unpair
-      data:
-        divisao: ${DIVISAO}
+      service: script.bt_unpair_${DIVISAO}
       confirmation:
         text: "Confirmar: esquecer o amplificador Bluetooth?"
     icon_tap_action:

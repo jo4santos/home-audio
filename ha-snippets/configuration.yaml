@@ -14,46 +14,46 @@
 command_line:
   - binary_sensor: &bt_sensor
       name: bt_escritorio
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.7 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.7 '/usr/local/bin/bt-status.sh'"
       payload_on: "1"
       payload_off: "0"
       device_class: connectivity
-      scan_interval: 15
+      scan_interval: 5
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_suite
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.2 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.2 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_cozinha
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.3 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.3 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_sala
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.4 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.4 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_wcsuite
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.5 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.5 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_quartocriancas
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.6 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.6 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_quartodesporto
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.1 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.1 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_teste
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no relvasantos@192.168.30.8 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.8 '/usr/local/bin/bt-status.sh'"
 
 
 # --- Shell commands (partilhados, não tocar) ---
@@ -63,55 +63,149 @@ shell_command:
   bt_unpair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"
 
 
-# --- Scripts (um único por acção, recebe divisao como argumento) ---
+# --- Scripts por divisão (estado "on" = a executar → usado como loading indicator no dashboard) ---
 
 script:
-  bt_pair:
-    alias: "BT Ligar"
-    fields:
-      divisao:
-        description: "Nome da divisão (escritorio, suite, cozinha, ...)"
-        required: true
+  bt_pair_escritorio:
+    alias: "BT Ligar Escritório"
     sequence:
       - action: shell_command.bt_pair
         data:
           user: relvasantos
-          ip: >-
-            {% set ips = {
-              'escritorio':    '192.168.30.7',
-              'suite':         '192.168.30.2',
-              'cozinha':       '192.168.30.3',
-              'sala':          '192.168.30.4',
-              'wcsuite':       '192.168.30.5',
-              'quartocriancas':'192.168.30.6',
-              'quartodesporto':'192.168.30.1',
-              'teste':         '192.168.30.8'
-            } %}
-            {{ ips[divisao] }}
-    mode: parallel
-    max: 8
+          ip: "192.168.30.7"
+    mode: single
 
-  bt_unpair:
-    alias: "BT Desligar"
-    fields:
-      divisao:
-        description: "Nome da divisão (escritorio, suite, cozinha, ...)"
-        required: true
+  bt_unpair_escritorio:
+    alias: "BT Desligar Escritório"
     sequence:
       - action: shell_command.bt_unpair
         data:
           user: relvasantos
-          ip: >-
-            {% set ips = {
-              'escritorio':    '192.168.30.7',
-              'suite':         '192.168.30.2',
-              'cozinha':       '192.168.30.3',
-              'sala':          '192.168.30.4',
-              'wcsuite':       '192.168.30.5',
-              'quartocriancas':'192.168.30.6',
-              'quartodesporto':'192.168.30.1',
-              'teste':         '192.168.30.8'
-            } %}
-            {{ ips[divisao] }}
-    mode: parallel
-    max: 8
+          ip: "192.168.30.7"
+    mode: single
+
+  bt_pair_suite:
+    alias: "BT Ligar Suite"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.2"
+    mode: single
+
+  bt_unpair_suite:
+    alias: "BT Desligar Suite"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.2"
+    mode: single
+
+  bt_pair_cozinha:
+    alias: "BT Ligar Cozinha"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.3"
+    mode: single
+
+  bt_unpair_cozinha:
+    alias: "BT Desligar Cozinha"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.3"
+    mode: single
+
+  bt_pair_sala:
+    alias: "BT Ligar Sala"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.4"
+    mode: single
+
+  bt_unpair_sala:
+    alias: "BT Desligar Sala"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.4"
+    mode: single
+
+  bt_pair_wcsuite:
+    alias: "BT Ligar WC Suite"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.5"
+    mode: single
+
+  bt_unpair_wcsuite:
+    alias: "BT Desligar WC Suite"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.5"
+    mode: single
+
+  bt_pair_quartocriancas:
+    alias: "BT Ligar Quarto Crianças"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.6"
+    mode: single
+
+  bt_unpair_quartocriancas:
+    alias: "BT Desligar Quarto Crianças"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.6"
+    mode: single
+
+  bt_pair_quartodesporto:
+    alias: "BT Ligar Quarto Desporto"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.1"
+    mode: single
+
+  bt_unpair_quartodesporto:
+    alias: "BT Desligar Quarto Desporto"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.1"
+    mode: single
+
+  bt_pair_teste:
+    alias: "BT Ligar Teste"
+    sequence:
+      - action: shell_command.bt_pair
+        data:
+          user: relvasantos
+          ip: "192.168.30.8"
+    mode: single
+
+  bt_unpair_teste:
+    alias: "BT Desligar Teste"
+    sequence:
+      - action: shell_command.bt_unpair
+        data:
+          user: relvasantos
+          ip: "192.168.30.8"
+    mode: single

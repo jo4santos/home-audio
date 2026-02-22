@@ -20,10 +20,36 @@ cards:
     icon: mdi:speaker-bluetooth
     vertical: false
     tap_action:
-      action: toggle
+      action: call-service
+      service: switch.turn_on
+      target:
+        entity_id: switch.s60tpf_10_rpi_quartodesporto
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_10_rpi_quartodesporto
+        state: "off"
+  - type: tile
+    entity: switch.s60tpf_10_rpi_quartodesporto
+    name: Controlador
+    icon: mdi:speaker-bluetooth
+    vertical: false
+    tap_action:
+      action: call-service
+      service: switch.turn_off
+      target:
+        entity_id: switch.s60tpf_10_rpi_quartodesporto
+      confirmation:
+        text: "Confirmar: desligar o controlador?"
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_10_rpi_quartodesporto
+        state: "on"
   - type: tile
     entity: binary_sensor.bt_quartodesporto
     name: Desligado
@@ -33,9 +59,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_pair
-      data:
-        divisao: quartodesporto
+      service: script.bt_pair_quartodesporto
     icon_tap_action:
       action: none
     features_position: bottom
@@ -55,6 +79,27 @@ cards:
       - condition: state
         entity: binary_sensor.bt_quartodesporto
         state: "off"
+      - condition: state
+        entity: script.bt_pair_quartodesporto
+        state: "off"
+  - type: tile
+    entity: script.bt_pair_quartodesporto
+    name: A ligar...
+    icon: mdi:bluetooth-connect
+    hide_state: true
+    vertical: false
+    tap_action:
+      action: none
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_10_rpi_quartodesporto
+        state: "on"
+      - condition: state
+        entity: script.bt_pair_quartodesporto
+        state: "on"
   - type: tile
     entity: binary_sensor.bt_quartodesporto
     name: Ligado
@@ -64,9 +109,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_unpair
-      data:
-        divisao: quartodesporto
+      service: script.bt_unpair_quartodesporto
       confirmation:
         text: "Confirmar: esquecer o amplificador Bluetooth?"
     icon_tap_action:

@@ -20,10 +20,36 @@ cards:
     icon: mdi:speaker-bluetooth
     vertical: false
     tap_action:
-      action: toggle
+      action: call-service
+      service: switch.turn_on
+      target:
+        entity_id: switch.s60tpf_6_rpi_cozinha
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_6_rpi_cozinha
+        state: "off"
+  - type: tile
+    entity: switch.s60tpf_6_rpi_cozinha
+    name: Controlador
+    icon: mdi:speaker-bluetooth
+    vertical: false
+    tap_action:
+      action: call-service
+      service: switch.turn_off
+      target:
+        entity_id: switch.s60tpf_6_rpi_cozinha
+      confirmation:
+        text: "Confirmar: desligar o controlador?"
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_6_rpi_cozinha
+        state: "on"
   - type: tile
     entity: binary_sensor.bt_cozinha
     name: Desligado
@@ -33,9 +59,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_pair
-      data:
-        divisao: cozinha
+      service: script.bt_pair_cozinha
     icon_tap_action:
       action: none
     features_position: bottom
@@ -55,6 +79,27 @@ cards:
       - condition: state
         entity: binary_sensor.bt_cozinha
         state: "off"
+      - condition: state
+        entity: script.bt_pair_cozinha
+        state: "off"
+  - type: tile
+    entity: script.bt_pair_cozinha
+    name: A ligar...
+    icon: mdi:bluetooth-connect
+    hide_state: true
+    vertical: false
+    tap_action:
+      action: none
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_6_rpi_cozinha
+        state: "on"
+      - condition: state
+        entity: script.bt_pair_cozinha
+        state: "on"
   - type: tile
     entity: binary_sensor.bt_cozinha
     name: Ligado
@@ -64,9 +109,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_unpair
-      data:
-        divisao: cozinha
+      service: script.bt_unpair_cozinha
       confirmation:
         text: "Confirmar: esquecer o amplificador Bluetooth?"
     icon_tap_action:
