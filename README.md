@@ -28,16 +28,16 @@ Este projeto implementa um sistema de áudio multi-divisão com:
 
 ## 🏠 Configuração das Divisões
 
-| Divisão          | IP            | MAC Amplificador  | Hostname              | Player Name            |
-|------------------|---------------|-------------------|-----------------------|------------------------|
-| Escritório       | 192.168.30.7  | 00:0D:18:B0:67:E8 | rpi-escritorio        | colunas-escritorio     |
-| Suite            | 192.168.30.2  | 00:0D:18:B0:67:76 | rpi-suite             | colunas-suite          |
-| Cozinha          | 192.168.30.3  | 6A:71:C1:06:D3:2A | rpi-cozinha           | colunas-cozinha        |
-| Sala             | 192.168.30.4  | 34:81:F4:F5:E8:AC | rpi-sala              | colunas-sala           |
-| WC Suite         | 192.168.30.5  | 00:0D:18:B0:62:43 | rpi-wcsuite           | colunas-wcsuite        |
-| Quarto Crianças  | 192.168.30.6  | 00:0D:18:B0:67:C5 | rpi-quartocriancas    | colunas-quartocriancas |
-| Quarto Desporto  | 192.168.30.1  | 34:81:F4:F6:88:73 | rpi-quartodesporto    | colunas-quartodesporto |
-| Teste            | 192.168.30.8  | (configurável)    | rpi-teste             | colunas-teste          |
+| Divisão          | IP            | MAC Amplificador  | Hostname              | Player Name            | Switch HA                          |
+|------------------|---------------|-------------------|-----------------------|------------------------|------------------------------------|
+| Escritório       | 192.168.30.7  | 00:0D:18:B0:67:E8 | rpi-escritorio        | colunas-escritorio     | switch.s60tpf_4_rpi_escritorio     |
+| Suite            | 192.168.30.2  | 00:0D:18:B0:67:76 | rpi-suite             | colunas-suite          | switch.s60tpf_5_rpi_suite          |
+| Cozinha          | 192.168.30.3  | 6A:71:C1:06:D3:2A | rpi-cozinha           | colunas-cozinha        | switch.s60tpf_6_rpi_cozinha        |
+| Sala             | 192.168.30.4  | 34:81:F4:F5:E8:AC | rpi-sala              | colunas-sala           | switch.s60tpf_7_rpi_sala           |
+| WC Suite         | 192.168.30.5  | 00:0D:18:B0:62:43 | rpi-wcsuite           | colunas-wcsuite        | switch.s60tpf_8_rpi_wcsuite        |
+| Quarto Crianças  | 192.168.30.6  | 00:0D:18:B0:67:C5 | rpi-quartocriancas    | colunas-quartocriancas | switch.s60tpf_9_rpi_quartocriancas |
+| Quarto Desporto  | 192.168.30.1  | 34:81:F4:F6:88:73 | rpi-quartodesporto    | colunas-quartodesporto | switch.s60tpf_10_rpi_quartodesporto|
+| Teste            | 192.168.30.8  | 34:81:F4:F5:E8:AC | rpi-teste             | colunas-teste          | switch.s60tpf_3_rpi_teste          |
 
 **Servidor Snapcast**: 192.168.2.100 (Home Assistant)
 
@@ -940,5 +940,5 @@ Se o RPi não arrancar ou tiver problemas graves:
 ---
 
 **Versão**: 2.2
-**Última atualização**: 2026-02-21
+**Última atualização**: 2026-02-22
 **Autor**: José Santos
