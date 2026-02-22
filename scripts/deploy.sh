@@ -110,6 +110,15 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    card_mod:
+      style:
+        ha-tile-info$: |
+          .secondary::after {
+            content: "Clicar para emparelhar";
+            color: var(--secondary-text-color);
+            white-space: pre-wrap;
+            display: block;
+          }
     visibility:
       - condition: state
         entity: ${SWITCH_ENTITY}
@@ -133,6 +142,15 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    card_mod:
+      style:
+        ha-tile-info$: |
+          .secondary::after {
+            content: "Clicar para esquecer";
+            color: var(--secondary-text-color);
+            white-space: pre-wrap;
+            display: block;
+          }
     visibility:
       - condition: state
         entity: ${SWITCH_ENTITY}

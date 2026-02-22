@@ -27,7 +27,7 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_unpair
+      service: script.bt_pair
       data:
         divisao: quartodesporto
     icon_tap_action:
@@ -35,14 +35,12 @@ cards:
     features_position: bottom
     card_mod:
       style:
-        ha-tile-card$: |
-          .name::after {
+        ha-tile-info$: |
+          .secondary::after {
             content: "Clicar para emparelhar";
-            display: block;
-            font-size: 0.75em;
             color: var(--secondary-text-color);
-            font-weight: 400;
-            margin-top: 2px;
+            white-space: pre-wrap;
+            display: block;
           }
     visibility:
       - condition: state
@@ -69,14 +67,12 @@ cards:
     features_position: bottom
     card_mod:
       style:
-        ha-tile-card$: |
-          .name::after {
+        ha-tile-info$: |
+          .secondary::after {
             content: "Clicar para esquecer";
-            display: block;
-            font-size: 0.75em;
             color: var(--secondary-text-color);
-            font-weight: 400;
-            margin-top: 2px;
+            white-space: pre-wrap;
+            display: block;
           }
     visibility:
       - condition: state
