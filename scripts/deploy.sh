@@ -208,6 +208,9 @@ cards:
       - condition: state
         entity: binary_sensor.bt_${DIVISAO}
         state: "on"
+      - condition: state
+        entity: script.bt_pair_${DIVISAO}
+        state: "off"
   - type: custom:mini-media-player
     entity: media_player.${PLAYER_NAME//-/_}
     group: false
@@ -223,6 +226,9 @@ cards:
       - condition: state
         entity: media_player.${PLAYER_NAME//-/_}
         state_not: "unavailable"
+      - condition: state
+        entity: script.bt_pair_${DIVISAO}
+        state: "off"
 EOF
 
 echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"

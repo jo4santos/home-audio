@@ -131,6 +131,9 @@ cards:
       - condition: state
         entity: binary_sensor.bt_sala
         state: "on"
+      - condition: state
+        entity: script.bt_pair_sala
+        state: "off"
   - type: custom:mini-media-player
     entity: media_player.colunas_sala
     group: false
@@ -146,3 +149,6 @@ cards:
       - condition: state
         entity: media_player.colunas_sala
         state_not: "unavailable"
+      - condition: state
+        entity: script.bt_pair_sala
+        state: "off"

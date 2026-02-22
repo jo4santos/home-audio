@@ -59,8 +59,8 @@ command_line:
 # --- Shell commands (partilhados, não tocar) ---
 
 shell_command:
-  bt_pair:   "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh pair'"
-  bt_unpair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"
+  bt_pair:   "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh pair'"
+  bt_unpair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"
 
 
 # --- Scripts por divisão (estado "on" = a executar → usado como loading indicator no dashboard) ---
