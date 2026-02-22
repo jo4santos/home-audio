@@ -2,39 +2,8 @@
 # Home Assistant — Configuração global Bluetooth
 # Adicionar ao configuration.yaml (uma única vez).
 # Quando adicionar uma nova divisão, actualizar:
-#   1. input_boolean abaixo
-#   2. mapeamento de IPs nos dois scripts
+#   - mapeamento de IPs nos dois scripts abaixo
 # ============================================================
-
-
-# --- Entidades dummy para os cards tile (uma por divisão) ---
-# Não controlam nada — servem apenas de base visual para o tile card.
-
-input_boolean:
-  bt_escritorio:
-    name: "BT Escritório"
-    icon: mdi:speaker-bluetooth
-  bt_suite:
-    name: "BT Suite"
-    icon: mdi:speaker-bluetooth
-  bt_cozinha:
-    name: "BT Cozinha"
-    icon: mdi:speaker-bluetooth
-  bt_sala:
-    name: "BT Sala"
-    icon: mdi:speaker-bluetooth
-  bt_wcsuite:
-    name: "BT WC Suite"
-    icon: mdi:speaker-bluetooth
-  bt_quartocriancas:
-    name: "BT Quarto Crianças"
-    icon: mdi:speaker-bluetooth
-  bt_quartodesporto:
-    name: "BT Quarto Desporto"
-    icon: mdi:speaker-bluetooth
-  bt_teste:
-    name: "BT Teste"
-    icon: mdi:speaker-bluetooth
 
 
 # --- Shell commands (partilhados, não tocar) ---

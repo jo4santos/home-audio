@@ -1,7 +1,7 @@
 # ============================================================
 # Home Assistant — Dashboard card: Escritorio
 # Gerado por: ./deploy.sh escritorio
-# Data: 2026-02-21
+# Data: 2026-02-22
 # ============================================================
 # Requer os scripts bt_pair e bt_unpair em configuration.yaml
 # (ver ha-snippets/configuration.yaml — adicionar uma única vez).
@@ -15,7 +15,7 @@ cards:
     heading: Escritorio
     heading_style: title
   - type: tile
-    entity: input_boolean.bt_escritorio
+    entity: media_player.colunas_escritorio
     name: Controlador
     icon: mdi:speaker-bluetooth
     vertical: false
@@ -27,7 +27,7 @@ cards:
     grid_options:
       columns: full
   - type: tile
-    entity: input_boolean.bt_escritorio
+    entity: media_player.colunas_escritorio
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -43,7 +43,7 @@ cards:
       action: none
     features_position: bottom
   - type: tile
-    entity: input_boolean.bt_escritorio
+    entity: media_player.colunas_escritorio
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue

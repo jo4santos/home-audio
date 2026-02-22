@@ -92,7 +92,7 @@ cards:
     heading: ${ROOM_LABEL}
     heading_style: title
   - type: tile
-    entity: input_boolean.bt_${DIVISAO}
+    entity: media_player.${PLAYER_NAME//-/_}
     name: Controlador
     icon: mdi:speaker-bluetooth
     vertical: false
@@ -104,7 +104,7 @@ cards:
     grid_options:
       columns: full
   - type: tile
-    entity: input_boolean.bt_${DIVISAO}
+    entity: media_player.${PLAYER_NAME//-/_}
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -120,7 +120,7 @@ cards:
       action: none
     features_position: bottom
   - type: tile
-    entity: input_boolean.bt_${DIVISAO}
+    entity: media_player.${PLAYER_NAME//-/_}
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue

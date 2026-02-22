@@ -15,7 +15,7 @@ cards:
     heading: Sala
     heading_style: title
   - type: tile
-    entity: input_boolean.bt_sala
+    entity: media_player.colunas_sala
     name: Controlador
     icon: mdi:speaker-bluetooth
     vertical: false
@@ -27,7 +27,7 @@ cards:
     grid_options:
       columns: full
   - type: tile
-    entity: input_boolean.bt_sala
+    entity: media_player.colunas_sala
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -43,7 +43,7 @@ cards:
       action: none
     features_position: bottom
   - type: tile
-    entity: input_boolean.bt_sala
+    entity: media_player.colunas_sala
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue

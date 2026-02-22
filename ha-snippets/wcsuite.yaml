@@ -15,7 +15,7 @@ cards:
     heading: WC Suite
     heading_style: title
   - type: tile
-    entity: input_boolean.bt_wcsuite
+    entity: media_player.colunas_wcsuite
     name: Controlador
     icon: mdi:speaker-bluetooth
     vertical: false
@@ -27,7 +27,7 @@ cards:
     grid_options:
       columns: full
   - type: tile
-    entity: input_boolean.bt_wcsuite
+    entity: media_player.colunas_wcsuite
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -43,7 +43,7 @@ cards:
       action: none
     features_position: bottom
   - type: tile
-    entity: input_boolean.bt_wcsuite
+    entity: media_player.colunas_wcsuite
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue
