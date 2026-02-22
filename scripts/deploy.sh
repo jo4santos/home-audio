@@ -105,6 +105,7 @@ cards:
     entity: binary_sensor.bt_${DIVISAO}
     name: Desligado
     icon: mdi:bluetooth-off
+    color: grey
     hide_state: true
     vertical: false
     tap_action:
@@ -135,6 +136,7 @@ cards:
     entity: binary_sensor.bt_${DIVISAO}
     name: Ligado
     icon: mdi:bluetooth
+    color: blue
     hide_state: true
     vertical: false
     tap_action:

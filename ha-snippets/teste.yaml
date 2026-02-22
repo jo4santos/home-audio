@@ -28,6 +28,7 @@ cards:
     entity: binary_sensor.bt_teste
     name: Desligado
     icon: mdi:bluetooth-off
+    color: grey
     hide_state: true
     vertical: false
     tap_action:
@@ -58,6 +59,7 @@ cards:
     entity: binary_sensor.bt_teste
     name: Ligado
     icon: mdi:bluetooth
+    color: blue
     hide_state: true
     vertical: false
     tap_action:
