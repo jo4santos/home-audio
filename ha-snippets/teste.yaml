@@ -134,6 +134,27 @@ cards:
       - condition: state
         entity: script.bt_pair_teste
         state: "off"
+      - condition: state
+        entity: script.bt_unpair_teste
+        state: "off"
+  - type: tile
+    entity: script.bt_unpair_teste
+    name: A desligar...
+    icon: mdi:bluetooth-off
+    hide_state: true
+    vertical: false
+    tap_action:
+      action: none
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_3_rpi_teste
+        state: "on"
+      - condition: state
+        entity: script.bt_unpair_teste
+        state: "on"
   - type: custom:mini-media-player
     entity: media_player.colunas_teste
     group: false
@@ -151,4 +172,7 @@ cards:
         state_not: "unavailable"
       - condition: state
         entity: script.bt_pair_teste
+        state: "off"
+      - condition: state
+        entity: script.bt_unpair_teste
         state: "off"

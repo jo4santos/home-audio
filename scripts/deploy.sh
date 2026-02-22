@@ -211,6 +211,27 @@ cards:
       - condition: state
         entity: script.bt_pair_${DIVISAO}
         state: "off"
+      - condition: state
+        entity: script.bt_unpair_${DIVISAO}
+        state: "off"
+  - type: tile
+    entity: script.bt_unpair_${DIVISAO}
+    name: A desligar...
+    icon: mdi:bluetooth-off
+    hide_state: true
+    vertical: false
+    tap_action:
+      action: none
+    icon_tap_action:
+      action: none
+    features_position: bottom
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "on"
+      - condition: state
+        entity: script.bt_unpair_${DIVISAO}
+        state: "on"
   - type: custom:mini-media-player
     entity: media_player.${PLAYER_NAME//-/_}
     group: false
@@ -228,6 +249,9 @@ cards:
         state_not: "unavailable"
       - condition: state
         entity: script.bt_pair_${DIVISAO}
+        state: "off"
+      - condition: state
+        entity: script.bt_unpair_${DIVISAO}
         state: "off"
 EOF
 
