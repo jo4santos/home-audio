@@ -105,8 +105,12 @@ cards:
     features_position: bottom
     grid_options:
       columns: full
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "on"
   - type: tile
-    entity: media_player.${PLAYER_NAME//-/_}
+    entity: ${SWITCH_ENTITY}
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -121,8 +125,12 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "on"
   - type: tile
-    entity: media_player.${PLAYER_NAME//-/_}
+    entity: ${SWITCH_ENTITY}
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue
@@ -137,6 +145,10 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: ${SWITCH_ENTITY}
+        state: "on"
   - type: custom:mini-media-player
     entity: media_player.${PLAYER_NAME//-/_}
     group: false
@@ -145,6 +157,13 @@ cards:
     source: icon
     sound_mode: full
     info: short
+    visibility:
+      - condition: state
+        entity: binary_sensor.bt_${DIVISAO}
+        state: "on"
+      - condition: state
+        entity: media_player.${PLAYER_NAME//-/_}
+        state_not: "unavailable"
 EOF
 
 echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"

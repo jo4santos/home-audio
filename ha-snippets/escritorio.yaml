@@ -28,8 +28,12 @@ cards:
     features_position: bottom
     grid_options:
       columns: full
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_4_rpi_escritorio
+        state: "on"
   - type: tile
-    entity: media_player.colunas_escritorio
+    entity: switch.s60tpf_4_rpi_escritorio
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -44,8 +48,12 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_4_rpi_escritorio
+        state: "on"
   - type: tile
-    entity: media_player.colunas_escritorio
+    entity: switch.s60tpf_4_rpi_escritorio
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue
@@ -60,6 +68,10 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_4_rpi_escritorio
+        state: "on"
   - type: custom:mini-media-player
     entity: media_player.colunas_escritorio
     group: false
@@ -68,3 +80,10 @@ cards:
     source: icon
     sound_mode: full
     info: short
+    visibility:
+      - condition: state
+        entity: binary_sensor.bt_escritorio
+        state: "on"
+      - condition: state
+        entity: media_player.colunas_escritorio
+        state_not: "unavailable"

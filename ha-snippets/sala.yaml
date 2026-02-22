@@ -1,7 +1,7 @@
 # ============================================================
 # Home Assistant — Dashboard card: Sala
 # Gerado por: ./deploy.sh sala
-# Data: 2026-02-21
+# Data: 2026-02-22
 # ============================================================
 # Requer os scripts bt_pair e bt_unpair em configuration.yaml
 # (ver ha-snippets/configuration.yaml — adicionar uma única vez).
@@ -28,8 +28,12 @@ cards:
     features_position: bottom
     grid_options:
       columns: full
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_7_rpi_sala
+        state: "on"
   - type: tile
-    entity: media_player.colunas_sala
+    entity: switch.s60tpf_7_rpi_sala
     name: Emparelhar
     icon: mdi:bluetooth-connect
     color: blue
@@ -44,8 +48,12 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_7_rpi_sala
+        state: "on"
   - type: tile
-    entity: media_player.colunas_sala
+    entity: switch.s60tpf_7_rpi_sala
     name: Esquecer
     icon: mdi:bluetooth-off
     color: blue
@@ -60,6 +68,10 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    visibility:
+      - condition: state
+        entity: switch.s60tpf_7_rpi_sala
+        state: "on"
   - type: custom:mini-media-player
     entity: media_player.colunas_sala
     group: false
@@ -68,3 +80,10 @@ cards:
     source: icon
     sound_mode: full
     info: short
+    visibility:
+      - condition: state
+        entity: binary_sensor.bt_sala
+        state: "on"
+      - condition: state
+        entity: media_player.colunas_sala
+        state_not: "unavailable"
