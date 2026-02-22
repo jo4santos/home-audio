@@ -100,21 +100,8 @@ cards:
       columns: full
   - type: tile
     entity: binary_sensor.bt_${DIVISAO}
-    name: Bluetooth
-    icon: mdi:bluetooth
-    features_position: bottom
-    grid_options:
-      columns: full
-    visibility:
-      - condition: state
-        entity: ${SWITCH_ENTITY}
-        state: "on"
-  - type: tile
-    entity: ${SWITCH_ENTITY}
-    name: Emparelhar
-    icon: mdi:bluetooth-connect
-    color: blue
-    show_entity_picture: false
+    name: Desligado
+    icon: mdi:bluetooth-off
     hide_state: true
     vertical: false
     tap_action:
@@ -129,12 +116,13 @@ cards:
       - condition: state
         entity: ${SWITCH_ENTITY}
         state: "on"
+      - condition: state
+        entity: binary_sensor.bt_${DIVISAO}
+        state: "off"
   - type: tile
-    entity: ${SWITCH_ENTITY}
-    name: Esquecer
-    icon: mdi:bluetooth-off
-    color: blue
-    show_entity_picture: false
+    entity: binary_sensor.bt_${DIVISAO}
+    name: Ligado
+    icon: mdi:bluetooth
     hide_state: true
     vertical: false
     tap_action:
@@ -142,12 +130,17 @@ cards:
       service: script.bt_unpair
       data:
         divisao: ${DIVISAO}
+      confirmation:
+        text: "Confirmar: esquecer o amplificador Bluetooth?"
     icon_tap_action:
       action: none
     features_position: bottom
     visibility:
       - condition: state
         entity: ${SWITCH_ENTITY}
+        state: "on"
+      - condition: state
+        entity: binary_sensor.bt_${DIVISAO}
         state: "on"
   - type: custom:mini-media-player
     entity: media_player.${PLAYER_NAME//-/_}
