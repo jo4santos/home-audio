@@ -192,8 +192,8 @@ case "${1:-}" in
         log_msg "Emparelhar: a desactivar modo manual e iniciar reconexão..."
         # Remover flag — o timer retoma a gestão automática
         rm -f "$FLAG_FILE"
-        # Disparar serviço de reconexão sem bloquear (devolve imediatamente ao HA)
-        sudo systemctl start bluetooth-reconnect.service --no-block 2>/dev/null || true
+        # Iniciar reconexão e aguardar conclusão (mantém SSH aberto → loading no HA)
+        sudo systemctl start bluetooth-reconnect.service 2>/dev/null || true
         log_msg "✓ Modo manual desactivado. Reconexão iniciada."
         ;;
     unpair)
