@@ -119,7 +119,7 @@ cards:
       style:
         ha-tile-info$: |
           .secondary::after {
-            content: "Clicar para emparelhar";
+            content: "Emparelhar";
             color: var(--secondary-text-color);
             white-space: pre-wrap;
             display: block;
@@ -151,7 +151,7 @@ cards:
       style:
         ha-tile-info$: |
           .secondary::after {
-            content: "Clicar para esquecer";
+            content: "Esquecer";
             color: var(--secondary-text-color);
             white-space: pre-wrap;
             display: block;
