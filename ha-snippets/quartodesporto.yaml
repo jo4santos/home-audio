@@ -19,8 +19,6 @@ cards:
     name: Controlador
     icon: mdi:speaker-bluetooth
     features_position: bottom
-    grid_options:
-      columns: full
   - type: tile
     entity: binary_sensor.bt_quartodesporto
     name: Desligado
@@ -29,12 +27,23 @@ cards:
     vertical: false
     tap_action:
       action: call-service
-      service: script.bt_pair
+      service: script.bt_unpair
       data:
         divisao: quartodesporto
     icon_tap_action:
       action: none
     features_position: bottom
+    card_mod:
+      style:
+        ha-tile-card$: |
+          .name::after {
+            content: "Clicar para emparelhar";
+            display: block;
+            font-size: 0.75em;
+            color: var(--secondary-text-color);
+            font-weight: 400;
+            margin-top: 2px;
+          }
     visibility:
       - condition: state
         entity: switch.s60tpf_10_rpi_quartodesporto
@@ -58,6 +67,17 @@ cards:
     icon_tap_action:
       action: none
     features_position: bottom
+    card_mod:
+      style:
+        ha-tile-card$: |
+          .name::after {
+            content: "Clicar para esquecer";
+            display: block;
+            font-size: 0.75em;
+            color: var(--secondary-text-color);
+            font-weight: 400;
+            margin-top: 2px;
+          }
     visibility:
       - condition: state
         entity: switch.s60tpf_10_rpi_quartodesporto

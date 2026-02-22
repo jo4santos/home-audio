@@ -96,8 +96,6 @@ cards:
     name: Controlador
     icon: mdi:speaker-bluetooth
     features_position: bottom
-    grid_options:
-      columns: full
   - type: tile
     entity: binary_sensor.bt_${DIVISAO}
     name: Desligado
