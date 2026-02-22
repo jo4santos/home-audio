@@ -18,6 +18,11 @@ cards:
     entity: switch.s60tpf_6_rpi_cozinha
     name: Controlador
     icon: mdi:speaker-bluetooth
+    vertical: false
+    tap_action:
+      action: toggle
+    icon_tap_action:
+      action: none
     features_position: bottom
   - type: tile
     entity: binary_sensor.bt_cozinha

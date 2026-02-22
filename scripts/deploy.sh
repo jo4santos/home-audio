@@ -95,6 +95,11 @@ cards:
     entity: ${SWITCH_ENTITY}
     name: Controlador
     icon: mdi:speaker-bluetooth
+    vertical: false
+    tap_action:
+      action: toggle
+    icon_tap_action:
+      action: none
     features_position: bottom
   - type: tile
     entity: binary_sensor.bt_${DIVISAO}
