@@ -220,6 +220,16 @@ EOFSCRIPT
 sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-control.sh
 sudo chmod +x /usr/local/bin/bluetooth-control.sh
 
+# Script de estado BT: imprime 1 (ligado) ou 0 (desligado) — chamado pelo HA via SSH
+sudo tee /usr/local/bin/bt-status.sh > /dev/null << 'EOFSCRIPT'
+#!/bin/bash
+AMP_MAC="__AMP_MAC__"
+bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes" && echo 1 || echo 0
+EOFSCRIPT
+
+sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bt-status.sh
+sudo chmod +x /usr/local/bin/bt-status.sh
+
 # Criar ficheiro de log com permissões corretas
 sudo touch /var/log/bluetooth-reconnect.log
 sudo chown ${USER}:${USER} /var/log/bluetooth-reconnect.log

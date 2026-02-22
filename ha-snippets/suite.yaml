@@ -22,6 +22,13 @@ cards:
     grid_options:
       columns: full
   - type: tile
+    entity: binary_sensor.bt_suite
+    name: Bluetooth
+    icon: mdi:bluetooth
+    features_position: bottom
+    grid_options:
+      columns: full
+  - type: tile
     entity: media_player.colunas_suite
     name: Emparelhar
     icon: mdi:bluetooth-connect

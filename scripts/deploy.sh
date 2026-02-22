@@ -99,6 +99,13 @@ cards:
     grid_options:
       columns: full
   - type: tile
+    entity: binary_sensor.bt_${DIVISAO}
+    name: Bluetooth
+    icon: mdi:bluetooth
+    features_position: bottom
+    grid_options:
+      columns: full
+  - type: tile
     entity: media_player.${PLAYER_NAME//-/_}
     name: Emparelhar
     icon: mdi:bluetooth-connect
