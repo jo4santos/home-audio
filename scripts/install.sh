@@ -164,6 +164,7 @@ if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
     log_msg "✓ Conectado com sucesso"
     SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
     [ -n "$SINK_NAME" ] && pactl set-default-sink "$SINK_NAME" 2>/dev/null && log_msg "✓ Sink definido: $SINK_NAME"
+    sudo systemctl restart snapclient 2>/dev/null && log_msg "✓ Snapclient reiniciado" || log_msg "⚠ Falha ao reiniciar snapclient"
 else
     log_msg "⚠ Não conectou (amplificador desligado ou fora de alcance)."
 fi
@@ -242,7 +243,8 @@ echo "✓ Chaves SSH do Home Assistant adicionadas"
 chmod 600 ~/.ssh/authorized_keys
 
 RFKILL_PATH=$(which rfkill 2>/dev/null || echo /usr/sbin/rfkill)
-echo "${USER} ALL=(ALL) NOPASSWD: /bin/systemctl start bluetooth-reconnect.service, ${RFKILL_PATH} unblock bluetooth" | sudo tee /etc/sudoers.d/bluetooth-reconnect > /dev/null
+SYSTEMCTL_PATH=$(which systemctl 2>/dev/null || echo /usr/bin/systemctl)
+echo "${USER} ALL=(ALL) NOPASSWD: ${SYSTEMCTL_PATH} start bluetooth-reconnect.service, ${SYSTEMCTL_PATH} restart snapclient, ${RFKILL_PATH} unblock bluetooth" | sudo tee /etc/sudoers.d/bluetooth-reconnect > /dev/null
 sudo chmod 440 /etc/sudoers.d/bluetooth-reconnect
 echo "✓ Sudoers configurado para Home Assistant"
 

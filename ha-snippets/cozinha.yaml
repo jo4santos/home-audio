@@ -15,14 +15,9 @@ cards:
     heading: Cozinha
     heading_style: title
   - type: tile
-    entity: media_player.colunas_cozinha
+    entity: switch.s60tpf_6_rpi_cozinha
     name: Controlador
     icon: mdi:speaker-bluetooth
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
     features_position: bottom
     grid_options:
       columns: full

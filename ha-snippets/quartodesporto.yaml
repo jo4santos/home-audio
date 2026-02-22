@@ -15,14 +15,9 @@ cards:
     heading: Quarto Desporto
     heading_style: title
   - type: tile
-    entity: media_player.colunas_quartodesporto
+    entity: switch.s60tpf_10_rpi_quartodesporto
     name: Controlador
     icon: mdi:speaker-bluetooth
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
     features_position: bottom
     grid_options:
       columns: full

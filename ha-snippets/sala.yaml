@@ -15,14 +15,9 @@ cards:
     heading: Sala
     heading_style: title
   - type: tile
-    entity: media_player.colunas_sala
+    entity: switch.s60tpf_7_rpi_sala
     name: Controlador
     icon: mdi:speaker-bluetooth
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
     features_position: bottom
     grid_options:
       columns: full

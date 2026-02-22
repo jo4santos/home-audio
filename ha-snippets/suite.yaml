@@ -15,14 +15,9 @@ cards:
     heading: Suite
     heading_style: title
   - type: tile
-    entity: media_player.colunas_suite
+    entity: switch.s60tpf_5_rpi_suite
     name: Controlador
     icon: mdi:speaker-bluetooth
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
     features_position: bottom
     grid_options:
       columns: full

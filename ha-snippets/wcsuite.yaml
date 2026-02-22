@@ -15,14 +15,9 @@ cards:
     heading: WC Suite
     heading_style: title
   - type: tile
-    entity: media_player.colunas_wcsuite
+    entity: switch.s60tpf_8_rpi_wcsuite
     name: Controlador
     icon: mdi:speaker-bluetooth
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
     features_position: bottom
     grid_options:
       columns: full

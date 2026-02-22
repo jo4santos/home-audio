@@ -92,14 +92,9 @@ cards:
     heading: ${ROOM_LABEL}
     heading_style: title
   - type: tile
-    entity: media_player.${PLAYER_NAME//-/_}
+    entity: ${SWITCH_ENTITY}
     name: Controlador
     icon: mdi:speaker-bluetooth
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
     features_position: bottom
     grid_options:
       columns: full
