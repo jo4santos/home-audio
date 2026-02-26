@@ -58,7 +58,6 @@ echo ""
 echo "A copiar ficheiros para ${USER}@${IP_ADDRESS}..."
 scp install.sh ${USER}@${IP_ADDRESS}:~/
 scp "$CONFIG_TO_COPY" ${USER}@${IP_ADDRESS}:~/config.env
-scp install-keepalive.sh ${USER}@${IP_ADDRESS}:~/
 
 # Limpar ficheiro temporário se foi criado
 if [ -n "$BT_MAC" ]; then
@@ -67,10 +66,6 @@ fi
 
 echo ""
 echo "✓ Ficheiros copiados com sucesso!"
-
-# Instalar bluetooth-keepalive (seguro para RPis já configurados)
-echo "A instalar bluetooth-keepalive em ${USER}@${IP_ADDRESS}..."
-ssh ${USER}@${IP_ADDRESS} 'bash install-keepalive.sh && rm ~/install-keepalive.sh'
 echo ""
 
 # Gerar snippet de configuração para o Home Assistant

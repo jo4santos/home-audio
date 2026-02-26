@@ -295,43 +295,6 @@ OnUnitActiveSec=15s
 WantedBy=timers.target
 EOF
 
-sudo tee /usr/local/bin/bluetooth-keepalive.sh > /dev/null << 'EOFSCRIPT'
-#!/bin/bash
-export XDG_RUNTIME_DIR=/run/user/1000
-export PULSE_RUNTIME_PATH=/run/user/1000/pulse/
-
-# Sair se modo manual activo (utilizador desemparelhou intencionalmente via HA)
-[ -f "/var/lib/bluetooth-reconnect/manual-mode" ] && exit 0
-
-SINK=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
-[ -z "$SINK" ] && exit 0
-
-# Stream contínua de silêncio: mantém A2DP STARTED, sem AVDTP SUSPEND/START
-dd if=/dev/zero bs=4096 2>/dev/null | \
-    paplay --raw --format=s16le --rate=44100 --channels=2 \
-           --device="$SINK" --stream-name="bt-keepalive" 2>/dev/null
-EOFSCRIPT
-
-sudo chmod +x /usr/local/bin/bluetooth-keepalive.sh
-
-sudo tee /etc/systemd/system/bluetooth-keepalive.service > /dev/null << EOF
-[Unit]
-Description=Bluetooth Amplifier Keep-Alive (continuous silence stream)
-After=pulseaudio.service
-
-[Service]
-Type=simple
-User=${USER}
-Environment="XDG_RUNTIME_DIR=/run/user/1000"
-Environment="PULSE_RUNTIME_PATH=/run/user/1000/pulse/"
-ExecStart=/usr/local/bin/bluetooth-keepalive.sh
-Restart=always
-RestartSec=15s
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 sudo tee /usr/local/bin/wifi-watchdog.sh > /dev/null << 'EOF'
 #!/bin/bash
 GATEWAY="192.168.30.1"
@@ -359,7 +322,6 @@ sudo chmod 644 /var/log/wifi-watchdog.log
 sudo systemctl daemon-reload
 sudo systemctl enable bluetooth-reconnect.service
 sudo systemctl enable bluetooth-reconnect.timer
-sudo systemctl enable bluetooth-keepalive.service
 
 mkdir -p ~/.config/systemd/user
 systemctl --user enable pulseaudio.service
