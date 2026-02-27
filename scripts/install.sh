@@ -295,46 +295,6 @@ OnUnitActiveSec=15s
 WantedBy=timers.target
 EOF
 
-sudo tee /usr/local/bin/bluetooth-keepalive.sh > /dev/null << 'EOFSCRIPT'
-#!/bin/bash
-# AVRCP keepalive: envia comando de controlo BT a cada 3min para prevenir auto-off
-# Não envia áudio — o sink mantém-se SUSPENDED
-export XDG_RUNTIME_DIR=/run/user/1000
-
-AMP_MAC="__AMP_MAC__"
-DEV_PATH="/org/bluez/hci0/dev_$(echo "$AMP_MAC" | tr ':' '_')"
-
-while true; do
-    if [ ! -f "/var/lib/bluetooth-reconnect/manual-mode" ]; then
-        if pactl list short sinks 2>/dev/null | grep -q bluez; then
-            dbus-send --system --dest=org.bluez "$DEV_PATH" \
-                org.bluez.MediaControl1.Pause 2>/dev/null
-        fi
-    fi
-    sleep 180
-done
-EOFSCRIPT
-
-sudo sed -i "s/__AMP_MAC__/${AMP_MAC}/g" /usr/local/bin/bluetooth-keepalive.sh
-sudo chmod +x /usr/local/bin/bluetooth-keepalive.sh
-
-sudo tee /etc/systemd/system/bluetooth-keepalive.service > /dev/null << EOF
-[Unit]
-Description=Bluetooth Amplifier Keep-Alive (AVRCP)
-After=bluetooth.service
-
-[Service]
-Type=simple
-User=${USER}
-Environment="XDG_RUNTIME_DIR=/run/user/1000"
-ExecStart=/usr/local/bin/bluetooth-keepalive.sh
-Restart=always
-RestartSec=10s
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 sudo tee /usr/local/bin/wifi-watchdog.sh > /dev/null << 'EOF'
 #!/bin/bash
 GATEWAY="192.168.30.1"
@@ -362,7 +322,6 @@ sudo chmod 644 /var/log/wifi-watchdog.log
 sudo systemctl daemon-reload
 sudo systemctl enable bluetooth-reconnect.service
 sudo systemctl enable bluetooth-reconnect.timer
-sudo systemctl enable bluetooth-keepalive.service
 
 mkdir -p ~/.config/systemd/user
 systemctl --user enable pulseaudio.service
