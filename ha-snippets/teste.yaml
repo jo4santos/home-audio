@@ -1,13 +1,3 @@
-# ============================================================
-# Home Assistant — Dashboard card: Teste
-# Gerado por: ./deploy.sh teste
-# Data: 2026-02-22
-# ============================================================
-# Requer os scripts bt_pair e bt_unpair em configuration.yaml
-# (ver ha-snippets/configuration.yaml — adicionar uma única vez).
-# Cole este YAML no editor Lovelace (Add Card → Manual).
-# ============================================================
-
 type: grid
 cards:
   - type: heading
@@ -169,7 +159,7 @@ cards:
         state: "on"
       - condition: state
         entity: media_player.colunas_teste
-        state_not: "unavailable"
+        state_not: unavailable
       - condition: state
         entity: script.bt_pair_teste
         state: "off"

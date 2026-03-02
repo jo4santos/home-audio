@@ -72,8 +72,17 @@ echo ""
 HA_SNIPPETS_DIR="../ha-snippets"
 mkdir -p "$HA_SNIPPETS_DIR"
 
-# Nome legível da divisão (capitalizar primeira letra, compatível com bash 3+)
-ROOM_LABEL=$(echo "$DIVISAO" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+# Nome legível da divisão
+case "$DIVISAO" in
+  escritorio)    ROOM_LABEL="Escritório" ;;
+  suite)         ROOM_LABEL="Suite" ;;
+  cozinha)       ROOM_LABEL="Cozinha" ;;
+  sala)          ROOM_LABEL="Sala" ;;
+  wcsuite)       ROOM_LABEL="WC Suite" ;;
+  quartocriancas) ROOM_LABEL="Quarto Crianças" ;;
+  quartodesporto) ROOM_LABEL="Quarto Desporto" ;;
+  *)             ROOM_LABEL=$(echo "$DIVISAO" | awk '{print toupper(substr($0,1,1)) substr($0,2)}') ;;
+esac
 
 cat > "${HA_SNIPPETS_DIR}/${DIVISAO}.yaml" << EOF
 # ============================================================
