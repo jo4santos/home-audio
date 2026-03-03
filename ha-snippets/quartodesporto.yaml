@@ -40,129 +40,77 @@ cards:
       - condition: state
         entity: switch.s60tpf_10_rpi_quartodesporto
         state: "on"
-  - type: tile
-    entity: binary_sensor.bt_quartodesporto
-    name: Desligado
-    icon: mdi:bluetooth-off
-    color: grey
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: call-service
-      service: script.bt_pair_quartodesporto
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    card_mod:
-      style:
-        ha-tile-info$: |
-          .secondary::after {
-            content: "Emparelhar";
-            color: var(--secondary-text-color);
-            white-space: pre-wrap;
-            display: block;
-          }
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_10_rpi_quartodesporto
-        state: "on"
-      - condition: state
-        entity: binary_sensor.bt_quartodesporto
-        state: "off"
-      - condition: state
-        entity: script.bt_pair_quartodesporto
-        state: "off"
-  - type: tile
-    entity: script.bt_pair_quartodesporto
-    name: A ligar...
-    icon: mdi:bluetooth-connect
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_10_rpi_quartodesporto
-        state: "on"
-      - condition: state
-        entity: script.bt_pair_quartodesporto
-        state: "on"
-  - type: tile
-    entity: binary_sensor.bt_quartodesporto
-    name: Ligado
-    icon: mdi:bluetooth
-    color: blue
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: call-service
-      service: script.bt_unpair_quartodesporto
-      confirmation:
-        text: "Confirmar: esquecer o amplificador Bluetooth?"
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    card_mod:
-      style:
-        ha-tile-info$: |
-          .secondary::after {
-            content: "Esquecer";
-            color: var(--secondary-text-color);
-            white-space: pre-wrap;
-            display: block;
-          }
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_10_rpi_quartodesporto
-        state: "on"
-      - condition: state
-        entity: binary_sensor.bt_quartodesporto
-        state: "on"
-      - condition: state
-        entity: script.bt_pair_quartodesporto
-        state: "off"
-      - condition: state
-        entity: script.bt_unpair_quartodesporto
-        state: "off"
-  - type: tile
-    entity: script.bt_unpair_quartodesporto
-    name: A desligar...
-    icon: mdi:bluetooth-off
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_10_rpi_quartodesporto
-        state: "on"
-      - condition: state
-        entity: script.bt_unpair_quartodesporto
-        state: "on"
-  - type: custom:mini-media-player
+  - type: custom:bubble-card
+    card_type: media-player
     entity: media_player.colunas_quartodesporto
-    group: false
-    volume_stateless: false
-    artwork: full-cover-fit
-    source: icon
-    sound_mode: full
-    info: short
+    name: Quarto Desporto
+    icon: mdi:cast-audio
+    cover_background: true
+    button_action:
+      tap_action:
+        action: more-info
+    sub_button:
+      main:
+        - entity: switch.s60tpf_10_rpi_quartodesporto
+          icon: mdi:raspberry-pi
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: toggle
+        - entity: binary_sensor.bt_quartodesporto
+          icon: mdi:bluetooth-off
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: call-service
+            service: script.bt_pair_quartodesporto
+          visibility:
+            - condition: state
+              entity: binary_sensor.bt_quartodesporto
+              state: "off"
+            - condition: state
+              entity: script.bt_pair_quartodesporto
+              state: "off"
+        - entity: script.bt_pair_quartodesporto
+          icon: mdi:bluetooth-connect
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: none
+          visibility:
+            - condition: state
+              entity: script.bt_pair_quartodesporto
+              state: "on"
+        - entity: binary_sensor.bt_quartodesporto
+          icon: mdi:bluetooth
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: call-service
+            service: script.bt_unpair_quartodesporto
+            confirmation:
+              text: "Confirmar: esquecer o amplificador Bluetooth?"
+          visibility:
+            - condition: state
+              entity: binary_sensor.bt_quartodesporto
+              state: "on"
+            - condition: state
+              entity: script.bt_pair_quartodesporto
+              state: "off"
+            - condition: state
+              entity: script.bt_unpair_quartodesporto
+              state: "off"
+        - entity: script.bt_unpair_quartodesporto
+          icon: mdi:bluetooth-off
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: none
+          visibility:
+            - condition: state
+              entity: script.bt_unpair_quartodesporto
+              state: "on"
     visibility:
       - condition: state
-        entity: binary_sensor.bt_quartodesporto
+        entity: switch.s60tpf_10_rpi_quartodesporto
         state: "on"
-      - condition: state
-        entity: media_player.colunas_quartodesporto
-        state_not: unavailable
-      - condition: state
-        entity: script.bt_pair_quartodesporto
-        state: "off"
-      - condition: state
-        entity: script.bt_unpair_quartodesporto
-        state: "off"

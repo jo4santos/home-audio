@@ -40,129 +40,77 @@ cards:
       - condition: state
         entity: switch.s60tpf_3_rpi_teste
         state: "on"
-  - type: tile
-    entity: binary_sensor.bt_teste
-    name: Desligado
-    icon: mdi:bluetooth-off
-    color: grey
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: call-service
-      service: script.bt_pair_teste
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    card_mod:
-      style:
-        ha-tile-info$: |
-          .secondary::after {
-            content: "Emparelhar";
-            color: var(--secondary-text-color);
-            white-space: pre-wrap;
-            display: block;
-          }
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_3_rpi_teste
-        state: "on"
-      - condition: state
-        entity: binary_sensor.bt_teste
-        state: "off"
-      - condition: state
-        entity: script.bt_pair_teste
-        state: "off"
-  - type: tile
-    entity: script.bt_pair_teste
-    name: A ligar...
-    icon: mdi:bluetooth-connect
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_3_rpi_teste
-        state: "on"
-      - condition: state
-        entity: script.bt_pair_teste
-        state: "on"
-  - type: tile
-    entity: binary_sensor.bt_teste
-    name: Ligado
-    icon: mdi:bluetooth
-    color: blue
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: call-service
-      service: script.bt_unpair_teste
-      confirmation:
-        text: "Confirmar: esquecer o amplificador Bluetooth?"
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    card_mod:
-      style:
-        ha-tile-info$: |
-          .secondary::after {
-            content: "Esquecer";
-            color: var(--secondary-text-color);
-            white-space: pre-wrap;
-            display: block;
-          }
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_3_rpi_teste
-        state: "on"
-      - condition: state
-        entity: binary_sensor.bt_teste
-        state: "on"
-      - condition: state
-        entity: script.bt_pair_teste
-        state: "off"
-      - condition: state
-        entity: script.bt_unpair_teste
-        state: "off"
-  - type: tile
-    entity: script.bt_unpair_teste
-    name: A desligar...
-    icon: mdi:bluetooth-off
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    visibility:
-      - condition: state
-        entity: switch.s60tpf_3_rpi_teste
-        state: "on"
-      - condition: state
-        entity: script.bt_unpair_teste
-        state: "on"
-  - type: custom:mini-media-player
+  - type: custom:bubble-card
+    card_type: media-player
     entity: media_player.colunas_teste
-    group: false
-    volume_stateless: false
-    artwork: full-cover-fit
-    source: icon
-    sound_mode: full
-    info: short
+    name: Teste
+    icon: mdi:cast-audio
+    cover_background: true
+    button_action:
+      tap_action:
+        action: more-info
+    sub_button:
+      main:
+        - entity: switch.s60tpf_3_rpi_teste
+          icon: mdi:raspberry-pi
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: toggle
+        - entity: binary_sensor.bt_teste
+          icon: mdi:bluetooth-off
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: call-service
+            service: script.bt_pair_teste
+          visibility:
+            - condition: state
+              entity: binary_sensor.bt_teste
+              state: "off"
+            - condition: state
+              entity: script.bt_pair_teste
+              state: "off"
+        - entity: script.bt_pair_teste
+          icon: mdi:bluetooth-connect
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: none
+          visibility:
+            - condition: state
+              entity: script.bt_pair_teste
+              state: "on"
+        - entity: binary_sensor.bt_teste
+          icon: mdi:bluetooth
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: call-service
+            service: script.bt_unpair_teste
+            confirmation:
+              text: "Confirmar: esquecer o amplificador Bluetooth?"
+          visibility:
+            - condition: state
+              entity: binary_sensor.bt_teste
+              state: "on"
+            - condition: state
+              entity: script.bt_pair_teste
+              state: "off"
+            - condition: state
+              entity: script.bt_unpair_teste
+              state: "off"
+        - entity: script.bt_unpair_teste
+          icon: mdi:bluetooth-off
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: none
+          visibility:
+            - condition: state
+              entity: script.bt_unpair_teste
+              state: "on"
     visibility:
       - condition: state
-        entity: binary_sensor.bt_teste
+        entity: switch.s60tpf_3_rpi_teste
         state: "on"
-      - condition: state
-        entity: media_player.colunas_teste
-        state_not: unavailable
-      - condition: state
-        entity: script.bt_pair_teste
-        state: "off"
-      - condition: state
-        entity: script.bt_unpair_teste
-        state: "off"

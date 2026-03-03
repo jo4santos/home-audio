@@ -85,16 +85,6 @@ case "$DIVISAO" in
 esac
 
 cat > "${HA_SNIPPETS_DIR}/${DIVISAO}.yaml" << EOF
-# ============================================================
-# Home Assistant — Dashboard card: ${ROOM_LABEL}
-# Gerado por: ./deploy.sh ${DIVISAO}
-# Data: $(date '+%Y-%m-%d')
-# ============================================================
-# Requer os scripts bt_pair e bt_unpair em configuration.yaml
-# (ver ha-snippets/configuration.yaml — adicionar uma única vez).
-# Cole este YAML no editor Lovelace (Add Card → Manual).
-# ============================================================
-
 type: grid
 cards:
   - type: heading
@@ -137,132 +127,80 @@ cards:
       - condition: state
         entity: ${SWITCH_ENTITY}
         state: "on"
-  - type: tile
-    entity: binary_sensor.bt_${DIVISAO}
-    name: Desligado
-    icon: mdi:bluetooth-off
-    color: grey
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: call-service
-      service: script.bt_pair_${DIVISAO}
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    card_mod:
-      style:
-        ha-tile-info$: |
-          .secondary::after {
-            content: "Emparelhar";
-            color: var(--secondary-text-color);
-            white-space: pre-wrap;
-            display: block;
-          }
+  - type: custom:bubble-card
+    card_type: media-player
+    entity: media_player.colunas_${DIVISAO}
+    name: ${ROOM_LABEL}
+    icon: mdi:cast-audio
+    cover_background: true
+    button_action:
+      tap_action:
+        action: more-info
+    sub_button:
+      main:
+        - entity: ${SWITCH_ENTITY}
+          icon: mdi:raspberry-pi
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: toggle
+        - entity: binary_sensor.bt_${DIVISAO}
+          icon: mdi:bluetooth-off
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: call-service
+            service: script.bt_pair_${DIVISAO}
+          visibility:
+            - condition: state
+              entity: binary_sensor.bt_${DIVISAO}
+              state: "off"
+            - condition: state
+              entity: script.bt_pair_${DIVISAO}
+              state: "off"
+        - entity: script.bt_pair_${DIVISAO}
+          icon: mdi:bluetooth-connect
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: none
+          visibility:
+            - condition: state
+              entity: script.bt_pair_${DIVISAO}
+              state: "on"
+        - entity: binary_sensor.bt_${DIVISAO}
+          icon: mdi:bluetooth
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: call-service
+            service: script.bt_unpair_${DIVISAO}
+            confirmation:
+              text: "Confirmar: esquecer o amplificador Bluetooth?"
+          visibility:
+            - condition: state
+              entity: binary_sensor.bt_${DIVISAO}
+              state: "on"
+            - condition: state
+              entity: script.bt_pair_${DIVISAO}
+              state: "off"
+            - condition: state
+              entity: script.bt_unpair_${DIVISAO}
+              state: "off"
+        - entity: script.bt_unpair_${DIVISAO}
+          icon: mdi:bluetooth-off
+          show_icon: true
+          show_state: false
+          tap_action:
+            action: none
+          visibility:
+            - condition: state
+              entity: script.bt_unpair_${DIVISAO}
+              state: "on"
     visibility:
       - condition: state
         entity: ${SWITCH_ENTITY}
         state: "on"
-      - condition: state
-        entity: binary_sensor.bt_${DIVISAO}
-        state: "off"
-      - condition: state
-        entity: script.bt_pair_${DIVISAO}
-        state: "off"
-  - type: tile
-    entity: script.bt_pair_${DIVISAO}
-    name: A ligar...
-    icon: mdi:bluetooth-connect
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    visibility:
-      - condition: state
-        entity: ${SWITCH_ENTITY}
-        state: "on"
-      - condition: state
-        entity: script.bt_pair_${DIVISAO}
-        state: "on"
-  - type: tile
-    entity: binary_sensor.bt_${DIVISAO}
-    name: Ligado
-    icon: mdi:bluetooth
-    color: blue
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: call-service
-      service: script.bt_unpair_${DIVISAO}
-      confirmation:
-        text: "Confirmar: esquecer o amplificador Bluetooth?"
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    card_mod:
-      style:
-        ha-tile-info$: |
-          .secondary::after {
-            content: "Esquecer";
-            color: var(--secondary-text-color);
-            white-space: pre-wrap;
-            display: block;
-          }
-    visibility:
-      - condition: state
-        entity: ${SWITCH_ENTITY}
-        state: "on"
-      - condition: state
-        entity: binary_sensor.bt_${DIVISAO}
-        state: "on"
-      - condition: state
-        entity: script.bt_pair_${DIVISAO}
-        state: "off"
-      - condition: state
-        entity: script.bt_unpair_${DIVISAO}
-        state: "off"
-  - type: tile
-    entity: script.bt_unpair_${DIVISAO}
-    name: A desligar...
-    icon: mdi:bluetooth-off
-    hide_state: true
-    vertical: false
-    tap_action:
-      action: none
-    icon_tap_action:
-      action: none
-    features_position: bottom
-    visibility:
-      - condition: state
-        entity: ${SWITCH_ENTITY}
-        state: "on"
-      - condition: state
-        entity: script.bt_unpair_${DIVISAO}
-        state: "on"
-  - type: custom:mini-media-player
-    entity: media_player.${PLAYER_NAME//-/_}
-    group: false
-    volume_stateless: false
-    artwork: full-cover-fit
-    source: icon
-    sound_mode: full
-    info: short
-    visibility:
-      - condition: state
-        entity: binary_sensor.bt_${DIVISAO}
-        state: "on"
-      - condition: state
-        entity: media_player.${PLAYER_NAME//-/_}
-        state_not: "unavailable"
-      - condition: state
-        entity: script.bt_pair_${DIVISAO}
-        state: "off"
-      - condition: state
-        entity: script.bt_unpair_${DIVISAO}
-        state: "off"
 EOF
 
 echo "✓ Snippet HA gerado: ${HA_SNIPPETS_DIR}/${DIVISAO}.yaml"
