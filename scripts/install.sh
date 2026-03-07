@@ -20,11 +20,15 @@ echo "Servidor: $SNAPSERVER_IP"
 echo "Amplificador: $AMP_MAC"
 echo "Player: $PLAYER_NAME"
 echo ""
-read -p "Confirma esta configuração? (s/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Ss]$ ]]; then
-    echo "Instalação cancelada."
-    exit 1
+if [ -t 0 ]; then
+    read -p "Confirma esta configuração? (s/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Ss]$ ]]; then
+        echo "Instalação cancelada."
+        exit 1
+    fi
+else
+    echo "(modo não-interactivo — a continuar automaticamente)"
 fi
 
 echo ""
