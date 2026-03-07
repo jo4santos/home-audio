@@ -14,7 +14,7 @@
 command_line:
   - binary_sensor: &bt_sensor
       name: bt_escritorio
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.7 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.7 '/usr/local/bin/bt-status.sh'"
       payload_on: "1"
       payload_off: "0"
       device_class: connectivity
@@ -23,44 +23,47 @@ command_line:
   - binary_sensor:
       <<: *bt_sensor
       name: bt_suite
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.2 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.2 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_cozinha
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.3 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.3 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_sala
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.4 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.4 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_wcsuite
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.5 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.5 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_quartocriancas
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.6 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.6 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_quartodesporto
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.1 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.1 '/usr/local/bin/bt-status.sh'"
 
   - binary_sensor:
       <<: *bt_sensor
       name: bt_teste
-      command: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.8 '/usr/local/bin/bt-status.sh'"
+      command: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 relvasantos@192.168.30.8 '/usr/local/bin/bt-status.sh'"
 
 
 # --- Shell commands (partilhados, não tocar) ---
 
 shell_command:
-  bt_pair:   "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh pair'"
-  bt_unpair: "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"
+  bt_pair:   "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh pair'"
+  bt_unpair: "ssh -i /config/ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ user }}@{{ ip }} '/usr/local/bin/bluetooth-control.sh unpair'"
+  # Gestão da chave SSH persistente (correr uma vez, ou após mudança de chave)
+  generate_ssh_key: "mkdir -p /config/ssh && chmod 700 /config/ssh && [ -f /config/ssh/id_ed25519 ] || ssh-keygen -t ed25519 -f /config/ssh/id_ed25519 -N ''"
+  get_ssh_pubkey:   "cat /config/ssh/id_ed25519.pub"
 
 
 # --- Scripts por divisão (estado "on" = a executar → usado como loading indicator no dashboard) ---

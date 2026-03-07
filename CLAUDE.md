@@ -122,15 +122,14 @@ cards:
 - While this file exists, `bluetooth-reconnect.sh` exits silently (timer keeps running but does nothing)
 - Flag persists across reboots; the amp stays "unlinked" until user clicks Ligar
 
-### Generate SSH key (first time only)
+### Generate SSH key (first time only, or after HA OS update reset)
 
-Add to `configuration.yaml`, call via HA developer tools, copy stdout to `HA_PUBKEY_CONTAINER` in `install.sh`:
+A chave SSH do HA está em `/config/ssh/id_ed25519` — esta localização é persistente através de updates do HA OS (ao contrário de `/root/.ssh/` que é resetado).
 
-```yaml
-shell_command:
-  generate_ssh_key: "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
-  get_ssh_pubkey: "cat /root/.ssh/id_ed25519.pub"
-```
+Os comandos `generate_ssh_key` e `get_ssh_pubkey` já estão em `ha-snippets/configuration.yaml`. Após gerar a chave:
+1. Corre `get_ssh_pubkey` no Developer Tools
+2. Copia o stdout para `HA_PUBKEY_CONTAINER` em `install.sh`
+3. Faz redeploy a todos os RPis com `./install-all.sh`
 
 ## Important Constraints
 
