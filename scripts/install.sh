@@ -102,8 +102,22 @@ log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
 }
 
-# Exit silencioso se já conectado — o timer corre a cada 15s, não queremos spam no log
+# Já conectado: garantir que o sink BT é o default antes de sair silenciosamente.
+# O BlueZ pode reconectar o amp sem passar por este script (ex.: após reboot ou
+# standby do amp), deixando o PulseAudio sem default sink → snapclient sem saída
+# e a sala fica muda / fora do grupo. Só age (e loga) se o default estiver errado.
 if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
+    SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
+    if [ -n "$SINK_NAME" ]; then
+        CUR_SINK=$(pactl info 2>/dev/null | awk -F': ' '/Default Sink/{print $2}')
+        if [ "$CUR_SINK" != "$SINK_NAME" ]; then
+            pactl set-default-sink "$SINK_NAME" 2>/dev/null
+            for INPUT in $(pactl list short sink-inputs 2>/dev/null | awk '{print $1}'); do
+                pactl move-sink-input "$INPUT" "$SINK_NAME" 2>/dev/null
+            done
+            log_msg "Default sink corrigido para $SINK_NAME (amp já ligado)"
+        fi
+    fi
     exit 0
 fi
 
