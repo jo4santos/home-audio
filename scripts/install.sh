@@ -167,8 +167,17 @@ sleep 2
 if bluetoothctl info "$AMP_MAC" 2>/dev/null | grep -q "Connected: yes"; then
     log_msg "✓ Conectado com sucesso"
     SINK_NAME=$(pactl list short sinks 2>/dev/null | grep bluez | awk '{print $2}' | head -n1)
-    [ -n "$SINK_NAME" ] && pactl set-default-sink "$SINK_NAME" 2>/dev/null && log_msg "✓ Sink definido: $SINK_NAME"
-    sudo systemctl restart snapclient 2>/dev/null && log_msg "✓ Snapclient reiniciado" || log_msg "⚠ Falha ao reiniciar snapclient"
+    if [ -n "$SINK_NAME" ]; then
+        pactl set-default-sink "$SINK_NAME" 2>/dev/null && log_msg "✓ Sink definido: $SINK_NAME"
+        # Mover os streams existentes (snapclient) para o sink BT SEM reiniciar o snapclient.
+        # Reiniciar o snapclient desligava-o do snapserver e o Music Assistant removia-o do
+        # grupo de sync sem o voltar a juntar → música interrompida / sala fora do grupo.
+        MOVED=0
+        for INPUT in $(pactl list short sink-inputs 2>/dev/null | awk '{print $1}'); do
+            pactl move-sink-input "$INPUT" "$SINK_NAME" 2>/dev/null && MOVED=$((MOVED+1))
+        done
+        log_msg "✓ Streams movidos para o sink BT: $MOVED (snapclient mantido)"
+    fi
 else
     log_msg "⚠ Não conectou (amplificador desligado ou fora de alcance)."
 fi
